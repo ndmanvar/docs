@@ -89,7 +89,7 @@ However, to run on Sauce we use the general webdriver.Remote() instead of the sp
 desired_cap = {
     'platform': "Mac OS X 10.9",
     'browserName': "chrome",
-    'version': "31",
+    'version': "31"
 }
 driver = webdriver.Remote(
     command_executor='http://sauceUsername:sauceAccessKey@ondemand.saucelabs.com:80/wd/hub',
