@@ -209,7 +209,7 @@ namespace SauceLabs.SeleniumExamples
     }
 }
 ```
-##Running the Test
+## Running the Test
 
 1.  In the Solution Explorer, select your project and right-click Properties.
 2.  Select **Debug**.
@@ -221,42 +221,8 @@ namespace SauceLabs.SeleniumExamples
 2.  Press **F5** to build the project and debug the solution.
      This launches the Gallio test GUI where you can run your tests. The DLL for this project should be preloaded. If it isn’t, you can open it from the **File** menu.
 
-##Running Tests Against Local Applications
+## Running Tests Against Local Applications
 
-If there are situations when you when you want to test an application that is not publicly available, or is behind a firewall, you can use Sauce Connect. Sauce Connect is a tunneling application that allows you to execute tests securely when testing behind firewalls or on localhost. You can find out more about Sauce Connect by checking out the [Sauce Connect documentation](https://docs.saucelabs.com/reference/sauce-connect/).
+If your test application is not publicly available, you will need to use Sauce Connect so that Sauce can reach it.
 
-###Downloading Sauce Connect
-
-You can download Sauce Connect for these operating systems:
-
-**[Sauce Connect v4.3.8 for OS X](https://saucelabs.com/downloads/sc-4.3.11-osx.zip?_ga=1.40343072.341070038.1437411028)**
-
-**SHA1 Checksum**: 9d9ecb49fbea70186d08aac7de6032546d856379
-
-**[Sauce Connect v4.3.8 for Windows](https://saucelabs.com/downloads/sc-4.3.11-win32.zip?_ga=1.19972026.341070038.1437411028)**
-
-**SHA1 Checksum**: d3ad39466b221e7b779e0e69355a22b876a9b5c5
-
-**[Sauce Connect v4.3.8 for Linux](https://saucelabs.com/downloads/sc-4.3.11-linux.tar.gz?_ga=1.19972026.341070038.1437411028)**
-
-**SHA1 Checksum**: 0ae5960a9b4b33e5a8e8cad9ec4b610b68eb3520
-
-**[Sauce Connect v4.3.8 for Linux 32-bit](https://saucelabs.com/downloads/sc-4.3.11-linux32.tar.gz?_ga=1.19972026.341070038.1437411028)**
-
-**SHA1 Checksum**: b9724f63b727f3c49e7367970b6ea5e4a7bb697d
-
-
-###Configuring Sauce Connect
-
-You need to make sure that the outbound port number 443 is open for Sauce Connect to function properly. You can also configure Sauce Connect with a proxy that can reach [saucelabs.com](http://saucelabs.com), using the proxy or pac command line options.
-
-**Note**: Port 443 is open by default if not governed by a corporate network policy.
-
-###Installing Sauce Connect
-
-1.  After downloading Sauce Connect, extract the contents of the file.
-2.  Run this command from the install directory.
-
-```bin/sc -u YOUR\_SAUCE\_USERNAME -k YOUR\_SAUCE\_ACCESS\_KEY```
-
-When you see "connected," you’re ready to go! Your tests can now access localhost or a firewalled application.
+Sauce Connect is a tunneling app that allows you to execute tests securely when testing behind firewalls or on localhost. For more detailed information, please visit see the [Sauce Connect docs](https://docs.saucelabs.com/reference/sauce-connect/).
