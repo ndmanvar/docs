@@ -6,1147 +6,128 @@
   image: '/images/tutorials/php.png'
 }
 
-## Getting started with the Sausage library
+Sauce Labs is a cloud platform for executing automated and manual mobile and
+web tests. Sauce Labs supports running automated tests with Selenium WebDriver
+(for web applications) and Appium (for native and mobile web applications).
 
-We recommend using the [Sausage](http://github.com/jlipps/sausage) library to
-write Selenium tests. Although there are a number of Selenium libraries for
-PHP, Sausage is designed to make it easy to work with Sauce and automatically
-provides some convenient functionality like test pass/fail reporting.
+In this topic we'll show you how to run a test with Selenium WebDriver for PHP
+on Sauce Labs.
 
-Sausage is built on top of [PHPUnit](http://phpunit.de), which is one of the
-leading test frameworks for PHP. While neither PHPUnit nor Sausage are required
-to use Sauce, this tutorial will assume that this as our framework.
+## Prerequisites
 
-Although this tutorial is not a comprehensive guide for getting PHP set up on
-your system, here are some guidelines:
+You will need to have these components installed and set up before you can use
+PHP with Sauce.
 
-## PHP Setup for Mac
+  * PHP
+  * PHP curl library (for Windows only)
+  * curl/OpenSSL support for PHP (for Windows only)
+  * Sausage, a PHP framework developed for working with the Sauce Labs API
 
-Mac OS X comes with PHP installed, so no further steps are required to get PHP
-set up. Simply make sure that you have a recent version by opening `Terminal.app`
-and running the following command:
+### Installing PHP
 
-```bash
-php -v
-```
+These instructions are for setting up PHP on Windows. For information about
+setting up PHP on other operating systems, see [Installation and Configuration
+of PHP](http://php.net/manual/en/install.php) on the PHP documentation
+website.
 
-As long as you have a PHP version greater than 5.3 you should be good to go.
+  1. Download the latest thread-safe zip archive of the PHP binaries from [PHP Windows Downloads](http://windows.php.net/download/).
+  2. Extract the content of the downloaded archive to _C:\PHP_.
+  3. From the command prompt, navigate to _C:\PHP_ and prepare the php.ini file using these commands.
 
-* Continue to [Sausage setup for Mac](#sausage-setup-for-mac-and-linux)
+    ```cd C:\PHP```
 
-PHP Setup for Linux
----
-If you're using Ubuntu or another system with `apt-get` installed, you can
-easily install PHP and several important libraries with these two commands:
+    ```copy php.ini-development php.ini```
 
-```bash
-sudo apt-get update
-```
+### Enabling the PHP curl Library
 
-```bash
-sudo apt-get install php-pear php5-curl php5-xdebug
-```
-
-* Continue to [Sausage setup for Linux](#sausage-setup-for-mac-and-linux)
-
-PHP Setup for Windows
----
-**Note:** Windows 7 has an extra level of security, so to complete the following
-steps you'll need to do it from an Administrator console. To get this, click Start, and in the run box type `cmd`. Instead of pressing Enter,
-press Ctrl+Shift+Enter and the User Account Control dialog will appear.
-Log in and the command prompt opens in Administrator mode.
-
-1.  To get PHP, visit [PHP Windows Downloads](http://windows.php.net/download/)
-    and get the latest thread-safe zip archive of the PHP binaries.
-2.  Unzip the files into `C:\PHP`
-3.  From the console, navigate to `C:\PHP` and prepare the php.ini file:
-
-```bat
-cd C:\PHP
-```
-
-```bat
-copy php.ini-development php.ini
-```
-
-4.  In order to enable the PHP [curl](http://curl.haxx.se/) library, edit
-    the `C:\PHP\php.ini` file and uncomment each of these lines by removing
-    the semi-colon (`;`) which is in front of them:
-
-```ini
+Edit the ```C:\PHP\php.ini``` file and uncomment each of these lines by removing the
+semi-colon (;) that precedes them:
+````
 extension_dir = "ext"
 extension=php_curl.dll
 extension=php_openssl.dll
-```
+````
+### Installing curl/OpenSSL Support for PHP
 
-5.  Now we need to add `php.exe` to our Windows `PATH` so we can run it from
-    anywhere in the console by typing `php`. If you're not familiar with PHP,
-    visit [PHP's
-    FAQ](http://php.net/manual/en/faq.installation.php#faq.installation.addtopath)
-    for instructions on how to do this.
+  1. Right-click [mk-ca-bundle.vbs](https://raw.github.com/bagder/curl/master/lib/mk-ca-bundle.vbs) and select **Save link as...** , and then save the ```mk-ca-bundle.vbs``` file to your **C:\** directory.
+  2. From the command prompt, run the ```mk-ca-bundle.vbs``` file using this command:
 
-6.  Unfortunately, PHP for Windows does not ship with very good SSL support. To
-set up curl/OpenSSL support for PHP, do the following steps:
-    * Right-click <a href="https://raw.github.com/bagder/curl/master/lib/mk-ca-bundle.vbs">mk-ca-bundle.vbs</a>
-    * Select **Save Link As...** Save the `mk-ca-bundle.vbs` file to your `C:\>` directory.
-    * To create the `ca-bundle.crt` file, execute the `mk-ca-bundle.vbs` file from the Windows command prompt: `C:\>mk-ca-bundle.vbs`
-    * In the `[PHP]` section of your `PHP.ini` file, add the following line: `curl.cainfo = c:\ca-bundle.crt`
-    * Save and close your `PHP.ini` file.
+    ```C:\.mk-ca-bundle.vbs```
 
+  1. In the [PHP] section of the ```PHP.ini``` file, add this line of code:
 
-* Continue to [Sausage setup for Windows](#sausage-setup-for-windows)
+    ```curl.cainfo = c:\ca-bundle.crt```
 
-## Sausage Setup for Mac and Linux
+  1. Save and close the ```PHP.ini``` file.
 
-First, let's create a project directory that we'll use for this tutorial:
+### Installing Sausage
 
-```bash
-mkdir ~/sauce-tutorial && cd ~/sauce-tutorial
-```
+Sausage is a PHP framework that you can use with the Sauce Labs REST API. It is a set of classes and libraries that make it easy for you to run Selenium tests, either locally or on Sauce Labs. Sausage offers many additional features for free, like automatic pass/fail reporting. While we don't recommend any specific 3rd party library, we've used Sausage for our samples as an easy reference.
 
-Now we can use this curl one-liner to download and install Sausage using your username and your Sauce access key. You can
-find your Sauce access key on your [Sauce account page](https://saucelabs.com/account):
+Sausage comes bundled with Paratest (for running your tests in parallel) and
+optionally Sauce Connect (for testing locally-hosted sites with Sauce).
 
-```bash
-curl -s https://raw.githubusercontent.com/jlipps/sausage-bun/master/givememysausage.php |
-SAUCE_USERNAME=sauceUsername SAUCE_ACCESS_KEY=sauceAccessKey php
-```
+These instructions are for setting up Sausage on Windows operating system. For
+more information about setting up Sausage on other operating systems, see
+[Sausage Setup](https://github.com/jlipps/sausage).
 
-This will start the download script and install Sausage in the `~/sauce-tutorial`
+  1. Right-click [givememysausage.php](https://raw.githubusercontent.com/jlipps/sausage-bun/master/givememysausage.php), select **Save link as...** and save the ```givememysausage.php``` file to your project directory.
+  2. Navigate to your project directory in the command prompt and run the ```givememysausage.php``` file using this command:
 
-directory. Sausage checks for a number of requirements. If any are
-not met, notification messages display in the terminal. Fix any issues then run the curl command again.
+    ```php givememysausage.php -t YOUR_USERNAME YOUR_ACCESS_KEY```
 
-Sausage Setup for Windows
----
+This will download Sausage and all its dependences (PHPUnit for instance). The
+Sausage set up might take a few minutes. The set up checks for a number of
+requirements and if any are not met, notification messages are displayed on
+your screen. Fix the issues, if any, and then run installation command again.
 
-1.  Let's create a new directory for this tutorial project, say `C:\sauce-tutorial`:
+##Quick Start
 
-```bat
-mkdir C:\sauce-tutorial
-```
+Now that you have PHP and Sausage in place, let's try running a simple test to
+make sure that everything works.
 
-2.  To download the Sausage setup file, right-click
-    [givememysausage.php](https://raw.github.com/jlipps/sausage-bun/master/givememysausage.php),
-    select `Save Link As...` from the popup menu, and save the
-    `givememysausage.php` file into the `C:\sauce-tutorial` directory.
+If you're on a Windows system, run this command from your project directory:
 
-3.  Navigate to the `C:\sauce-tutorial` directory in the command prompt, then
-    run the script with PHP, setting your user credentials along the way:
+```vendor\bin\phpunit.bat WebDriverDemo.php```
 
-```bat
-cd C:\sauce-tutorial
-```
+If you're on a Mac/Linux system, run this command from your project directory:
 
-```bat
-php givememysausage.php -t sauceUsername sauceAccessKey
-```
+```vendor/bin/phpunit WebDriverDemo.php```
 
-Sausage checks for a number of requirements (this may take a while). If any
-are not met, notifiaction messages display in the terminal. Fix any issues
-then run the php command again. **Note:** See the next step for manually
-configuring Sauce with your username and Sauce access key.
+This starts the PHPUnit test runner. You might not see any output right away,
+but eventually you will see a series of dots inching across the. Each of these
+dots represents a test that successfully passed. Tests with errors or failed
+tests are represented by printing an E or an F respectively.
 
-You're all set up!
+You should be able to see each test as it queues, runs, and finishes on your
+[Sauce test page](https://saucelabs.com/tests). You will notice that each test
+has a name. This information is sent automatically by Sausage at the beginning
+of each test. Sausage also automatically notifies Sauce of the status of your
+tests after they are complete.
 
-## Running your first test
+## Code Example
 
+Now let's take a look at some simple PHP code. In this example, we define a
+set of browsers to use, and run a simple check to make sure that clicking the
+link gets us to the expected new page. This simple example contains everything
+needed to run an automated test on Sauce Labs.
 
-Now that you've got PHP and Sausage set up, let's try running a simple test
-to make sure that everything works.
-
-**Mac/Linux:**
-
-If you're using Mac or Linux, run this command from your `sauce-tutorial` directory:
-
-```bash
-vendor/bin/phpunit WebDriverDemo.php
-```
-
-**Windows:**
-
-If you're using Windows, run this command from your `sauce-tutorial` directory:
-
-```bat
-vendor\bin\phpunit.bat WebDriverDemo.php
-```
-
-**Mac/Linux/Windows:**
-
-This starts the PHPUnit test runner and gives it the name of an example test
-suite that Sausage downloaded. After a few moments you should see that PHPUnit
-has started. You might not see any output instantaneously, but eventually you
-will see a series of dots inching across the screen.
-
-Each of these dots represents a test that successfully passed. If a test
-had an error or if it failed, PHPUnit prints an `E` or an `F` respectively.
-
-While the tests are running, navigate to your [Sauce Labs tests page](https://saucelabs.com/tests).
-From there you'll be able to see each test as it queues, runs, and finishes.
-You'll notice that each test has a name -- that information is sent
-automatically by Sausage at the beginning of each test. Sausage also
-automatically notifies Sauce of the status of your tests when they complete.
-
-Right now each test runs one at a time because PHPUnit currently doesn't
-support running multiple tests in parallel, however we've developed
-a way to do that which we'll describe in one of the later tutorials. For now,
-take advantage of the serial nature of the tests and click on a running test
-on your tests page. You'll jump to a detail view where, if you caught the
-test while it was running, you'll be able to watch Selenium controlling the
-browser. When the test finishes, the page updates with a video of the test
-and a list of the various Selenium commands that were sent.
-
-If you don't catch a test while it's running, you can click the test's link on
-the [Sauce Labs tests page](https://saucelabs.com/tests) to see the test's
-details and video.
-
-Now that you know that your setup worked and you were able to run your first
-test suite on Sauce, let's look at what actually happened under the hood. If
-you open the `WebDriverDemo.php` file in your text editor, this is what
-you'll see:
-
-```php
-<?php
-
-require_once 'vendor/autoload.php';
-
-class WebDriverDemo extends Sauce\Sausage\WebDriverTestCase
-{
-    public static $browsers = array(
-        // run FF15 on Windows 8 on Sauce
-        array(
-            'browserName' => 'firefox',
-            'desiredCapabilities' => array(
-                'version' => '15',
-                'platform' => 'Windows 2012'
-            )
-        )//,
-        // run Chrome on Linux on Sauce
-        //array(
-            //'browserName' => 'chrome',
-            //'desiredCapabilities' => array(
-                //'platform' => 'Linux'
-          //)
-        //),
-        // run Chrome locally
-        //array(
-            //'browserName' => 'chrome',
-            //'local' => true,
-            //'sessionStrategy' => 'shared'
-        //)
-    );
-
-    public function setUpPage()
-    {
-        $this->url('http://saucelabs.com/test/guinea-pig');
-    }
-
-    public function testTitle()
-    {
-        $this->assertContains("I am a page title", $this->title());
-    }
-
-    public function testLink()
-    {
-        $link = $this->byId('i am a link');
-        $link->click();
-        $this->assertContains("I am another page title", $this->title());
-    }
-
-    public function testTextbox()
-    {
-        $test_text = "This is some text";
-        $textbox = $this->byId('i_am_a_textbox');
-        $textbox->click();
-        $this->keys($test_text);
-        $this->assertEquals($textbox->value(), $test_text);
-    }
-
-    public function testSubmitComments()
-    {
-        $comment = "This is a very insightful comment.";
-        $this->byId('comments')->value($comment);
-        $this->byId('submit')->submit();
-        $driver = $this;
-
-        $comment_test = function() use ($comment, $driver) {
-            $text = $driver->byId('your_comments')->text();
-            return $text == "Your comments: $comment";
-        };
-
-        $this->spinAssert("Comment never showed up!", $comment_test);
-
-    }
-
-}
-php?>
-```
-
-Let's break this test suite down, chunk by chunk:
-
-```php
-require_once 'vendor/autoload.php';
-```
-
-Since Sausage is a [Composer](http://getcomposer.org) package, we use the
-Composer convention and have just one autoload.
-
-```php
-class WebDriverDemo extends Sauce\Sausage\WebDriverTestCase
-```
-
-Our `WebDriverDemo` class makes use of Sausage's `WebDriverTestCase`
-functionality.
-
-```php
-<?php
-public static $browsers = array(
-    // run Firefox v15 on Vista on Sauce
-    array(
-        'browserName' => 'firefox',
-        'desiredCapabilities' => array(
-            'version' => '15',
-            'platform' => 'VISTA'
-        )
-    )//,
-    // run Chrome on Linux on Sauce
-    //array(
-        //'browserName' => 'chrome',
-        //'desiredCapabilities' => array(
-            //'platform' => 'Linux'
-      //)
-    //),
-    // run Chrome locally
-    //array(
-        //'browserName' => 'chrome',
-        //'local' => true,
-        //'sessionStrategy' => 'shared'
-    //)
-);
-```
-
-This is where we define which browsers we want to use. One browser is not
-commented and is currently active. We define each browser and pass a special array to Sauce so we can specify the version and operating
-system. (Check out [the full browser list](http://saucelabs.com/docs/browsers)
-to see all of the different options.)
-
-If you have your own Selenium server set up and running, you can use
-it by setting in the `local` flag to true.
-
-```php
-<?php
-public function setUpPage()
-{
-    $this->url('http://saucelabs.com/test/guinea-pig');
-}
-```
-
-The `setUpPage()` function is run before every test in the suite. Basically, we
-declare that we want to navigate to a specific URL (in this case, a sandbox
-page that we set up at Sauce). So Selenium will point the browser to that URL
-before each test.
-
-```php
-<?php
-public function testTitle()
-{
-    $this->assertContains("I am a page title", $this->title());
-}
-```
-
-Our first test! (Notice that all test functions begin with `test`). This test
-uses a [PHPUnit assertion](http://www.phpunit.de/manual/3.4/en/appendixes.assertions.html)
-to check whether the page title contains the string "I am a page title". In the
-world of [PHPUnit and Selenium](http://www.phpunit.de/manual/3.4/en/selenium.html),
-calling `$this->title()` tells the Selenium session to return the title of the
-currently-loaded page.
-
-```php
-<?php
-public function testLink()
-{
-    $link = $this->byId('i am a link');
-    $link->click();
-    $this->assertContains("I am another page title", $this->title());
-}
-```
-
-This second test simply clicks a link and makes sure that the title of the
-resulting page is what we expect. `$this->byId()` returns an object
-representing a link element on the page with a specific ID. We can then perform
-various actions with this object, including `click()`, which tells Selenium
-to click on that link. In this case, clicking on the link takes us to a
-new page with a different title, which we verify.
-
-```php
-<?php
-public function testTextbox()
-{
-    $test_text = "This is some text";
-    $textbox = $this->byId('i_am_a_textbox');
-    $textbox->click();
-    $this->keys($test_text);
-    $this->assertEquals($textbox->value(), $test_text);
-}
-```
-
-This test gets a textbox element on the page with the ID `i_am_a_textbox` and
-clicks in it, bringing it in focus. Then it directs Selenium to send the
-browser a sequence of keystrokes. Finally, we check that the text we sent
-matches the value of the textbox.
-
-```php
-<?php
-public function testSubmitComments()
-{
-    $comment = "This is a very insightful comment.";
-    $this->byId('comments')->click();
-    $this->keys($comment);
-    $this->byId('submit')->submit();
-    $driver = $this;
-
-    $comment_test =
-        function() use ($comment, $driver)
-        {
-            return ($driver->byId('your_comments')->text() == "Your comments: $comment");
-        }
-    ;
-
-    $this->spinAssert("Comment never showed up!", $comment_test);
-
-}
-```
-
-In this last test, we follow a similar procedure as before to enter
-some text into a comment box. Then we submit the form the comment box is a
-member of. This (hopefully) causes the page to reload and show us the comment
-we submitted. In order to check whether this is the case, we use a _spinAssert_.
-
-SpinAsserts are covered in detail in a later tutorial, so
-for now take our word for it that the test checks periodically for the comment text we submitted,
-and fails if it does not show up after a certain amount of time.
-
-That's it! You've seen how to run several important Selenium commands
-in the context of a custom PHPUnit test suite.
-
-## Running Tests Against Web Applications
-
-Testing a static sandbox is one thing. Testing a real application's functionality
-is another. In this tutorial we'll run tests against a real live app sitting
-on the web. Specifically, we'll look at Selenium tests for signup and login
-behaviors. Once we're done you'll have a good idea how to write Selenium
-tests for login and signup in your own app, and you'll have a general understanding
-of how to test other site functionality as well.
-
-## The Test App
-
-We have a demo app set up at <a href="http://tutorialapp.saucelabs.com"
-target="_blank">http://tutorialapp.saucelabs.com</a> that we can run Selenium
-scripts against. It's a web-based "idea competition" demo app called <a
-href="https://github.com/Pylons/shootout" target="_blank">Shootout</a>).
-Shootout is a voting platform for ideas designed for the Pyramid Python web
-framework. We won't test voting functionality in this demo, but feel free to
-play around with it.
-
-The Test Suite
----
-
-If you downloaded Sausage you'll the have the `WebDriverDemoShootout.php` file
-in your `sauce-tutorial` directory. It's reproduced below. However, you can run
-these 8 tests before we examine them, and you can view them in your [Sauce Labs
-tests page](https://saucelabs.com/tests) just like we did during the first
-test:
-
-**Mac/Linux:**
-```bash
-vendor/bin/phpunit WebDriverDemoShootout.php
-```
-
-**Windows:**
-```bat
-vendor\bin\phpunit.bat WebDriverDemoShootout.php
-```
-And here's the test suite:
-
-```php
-<?php
-
-require_once 'vendor/autoload.php';
-
-class WebDriverDemoShootout extends Sauce\Sausage\WebDriverTestCase
-{
-
-    protected $start_url = 'http://tutorialapp.saucelabs.com';
-    protected $base_url = 'http://tutorialapp.saucelabs.com';
-
-    public static $browsers = array(
-        // run FF15 on Windows 8 on Sauce
-        array(
-            'browserName' => 'firefox',
-            'desiredCapabilities' => array(
-                'version' => '15',
-                'platform' => 'Windows 2012'
-            )
-    );
-
-    protected function randomUser()
-    {
-        $id = uniqid();
-        return array(
-            'username' => "fakeuser_$id",
-            'password' => 'testpass',
-            'name' => "Fake $id",
-            'email' => "$id@fake.com"
-        );
-    }
-
-    protected function doLogin($username, $password)
-    {
-        $this->url('/');
-        $this->byName('login')->value($username);
-        $this->byName('password')->value($password);
-        $this->byCss('input.login')->click();
-
-        $this->assertTextPresent("Logged in successfully", $this->byId('message'));
-    }
-
-    protected function doLogout()
-    {
-        $this->url('/logout');
-        $this->assertTextPresent("Logged out successfully", $this->byId('message'));
-    }
-
-    protected function doRegister($user, $logout = false)
-    {
-        $user['confirm_password'] = isset($user['confirm_password']) ?
-            $user['confirm_password'] : $user['password'];
-        $this->url('/register');
-        $this->byId('username')->value($user['username']);
-        $this->byId('password')->value($user['password']);
-        $this->byId('confirm_password')->value($user['confirm_password']);
-        $this->byId('name')->value($user['name']);
-        $this->byId('email')->value($user['email']);
-        $this->byId('form.submitted')->click();
-
-        if ($logout)
-            $this->doLogout();
-    }
-
-    public function testLoginFailsWithBadCredentials()
-    {
-        $fake_username = uniqid();
-        $fake_password = uniqid();
-
-        $this->byName('login')->value($fake_username);
-        $this->byName('password')->value($fake_password);
-        $this->byCss('input.login')->click();
-
-        $this->assertTextPresent("Failed to login.", $this->byId('message'));
-    }
-
-    public function testLogout()
-    {
-        $this->doRegister($this->randomUser(), true);
-    }
-
-    public function testLogin()
-    {
-        $user = $this->randomUser();
-        $this->doRegister($user, true);
-        $this->doLogin($user['username'], $user['password']);
-    }
-
-    public function testRegister()
-    {
-        $user = $this->randomUser();
-        $this->doRegister($user);
-        $logged_in_text = "You are logged in as {$user['username']}";
-        $this->assertTextPresent($logged_in_text);
-    }
-
-    public function testRegisterFailsWithoutUsername()
-    {
-        $user = $this->randomUser();
-        $user['username'] = '';
-        $this->doRegister($user);
-        $this->assertTextPresent("Please enter a value");
-    }
-
-    public function testRegisterFailsWithoutName()
-    {
-        $user = $this->randomUser();
-        $user['name'] = '';
-        $this->doRegister($user);
-        $this->assertTextPresent("Please enter a value");
-    }
-
-    public function testRegisterFailsWithMismatchedPasswords()
-    {
-        $user = $this->randomUser();
-        $user['confirm_password'] = uniqid();
-        $this->doRegister($user);
-        $this->assertTextPresent("Fields do not match");
-    }
-
-    public function testRegisterFailsWithBadEmail()
-    {
-        $user = $this->randomUser();
-        $user['email'] = 'test';
-        $this->doRegister($user);
-        $this->assertTextPresent("An email address must contain a single @");
-        $this->byId('email')->clear();
-        $this->byId('email')->value('@bob.com');
-        $this->byId('form.submitted')->click();
-        $this->assertTextPresent("The username portion of the email address is invalid");
-        $this->byId('email')->clear();
-        $this->byId('email')->value('test@bob');
-        $this->byId('form.submitted')->click();
-        $this->assertTextPresent("The domain portion of the email address is invalid");
-    }
-
-}
-```
-
-You're already familiar with a lot of what's going on in this test suite. 
-Let's just take a quick look at some new commands and concepts.
-
-Setting `$base_url` allows us to relativize all further uses of `$this->url()`
-to a particular domain or URL.
-
-```php
-<?php
-protected $base_url = 'http://tutorialapp.saucelabs.com';
-```
-
-Likewise, `$start_url` allows us to tell the testsuite which url should be
-loaded at the beginning of every test:
-
-```php
-<?php
-protected $start_url = 'http://tutorialapp.saucelabs.com';
-```
-
-The `randomUser()` function generates unique random user details for the registration
-and login tests. The randomness is important because it allows our tests to
-run in parallel as many times as we want without fear of collisions.
-
-```php
-<?php
-protected function randomUser()
-{
-    $id = uniqid();
-    return array(
-        'username' => "fakeuser_$id",
-        'password' => 'testpass',
-        'name' => "Fake $id",
-        'email' => "$id@fake.com"
-    );
-}
-```
-
-The next three functions are helper functions for our tests. If we were testing
-a local app, it would be more efficient to perform these actions on the
-server-side than to have Selenium generate states of being logged in, logged out,
-etc. However, since we're testing an app on the Internet whose backend is inaccessible
-to us, we're using these Selenium commands to put the user into these states.
-
-```php
-<?php
-protected function doLogin($username, $password)
-{
-    $this->url('/');
-    $this->byName('login')->value($username);
-    $this->byName('password')->value($password);
-    $this->byCss('input.login')->click();
-
-    $this->assertTextPresent("Logged in successfully", $this->byId('message'));
-}
-
-protected function doLogout()
-{
-    $this->url('/logout');
-    $this->assertTextPresent("Logged out successfully", $this->byId('message'));
-}
-
-protected function doRegister($user, $logout = false)
-{
-    $user['confirm_password'] = isset($user['confirm_password']) ?
-        $user['confirm_password'] : $user['password'];
-    $this->url('/register');
-    $this->byId('username')->value($user['username']);
-    $this->byId('password')->value($user['password']);
-    $this->byId('confirm_password')->value($user['confirm_password']);
-    $this->byId('name')->value($user['name']);
-    $this->byId('email')->value($user['email']);
-    $this->byId('form.submitted')->click();
-
-    if ($logout)
-        $this->doLogout();
-}
-```
-
-In our first test we make sure that logging in doesn't work with bad username/password
-values by asserting that we get a login failure message when we put in random
-text.
-
-```php
-<?php
-public function testLoginFailsWithBadCredentials()
-{
-    $fake_username = uniqid();
-    $fake_password = uniqid();
-
-    $this->byName('login')->value($fake_username);
-    $this->byName('password')->value($fake_password);
-    $this->byCss('input.login')->click();
-
-    $this->assertTextPresent("Failed to login.", $this->byId('message'));
-}
-```
-
-Next we test login and logout functionality. The first test creates a new user
-and uses the `doLogout()` helper function to assert that the logout message
-appears. The second test creates a random user, logs it out, and then uses
-the `doLogin()` helper function to assert that the successful login message
-appears.
-
-```php
-<?php
-public function testLogout()
-{
-    $this->doRegister($this->randomUser(), true);
-}
-
-public function testLogin()
-{
-    $user = $this->randomUser();
-    $this->doRegister($user, true);
-    $this->doLogin($user['username'], $user['password']);
-}
-```
-
-Then we test Shootout's signup functionality by using the
-registration helper function to create a new user, then we assert that the
-user is logged in (which happens after a successful registration).
-
-```php
-<?php
-public function testRegister()
-{
-    $user = $this->randomUser();
-    $this->doRegister($user);
-    $logged_in_text = "You are logged in as {$user['username']}";
-    $this->assertTextPresent($logged_in_text);
-}
-```
-
-And finally we have a set of tests for validation logic in the signup form. First we test that each of the required fields results in an error on signup 
-if the field is empty. Next we test if a mismatched password and password
-confirmation generate the desired error, and then we test to make sure that the app doesn't allow a successful 
-registration if various incorrect email formats are used.
-
-```php
-<?php
-public function testRegisterFailsWithoutUsername()
-{
-    $user = $this->randomUser();
-    $user['username'] = '';
-    $this->doRegister($user);
-    $this->assertTextPresent("Please enter a value");
-}
-
-public function testRegisterFailsWithoutName()
-{
-    $user = $this->randomUser();
-    $user['name'] = '';
-    $this->doRegister($user);
-    $this->assertTextPresent("Please enter a value");
-}
-
-public function testRegisterFailsWithMismatchedPasswords()
-{
-    $user = $this->randomUser();
-    $user['confirm_password'] = uniqid();
-    $this->doRegister($user);
-    $this->assertTextPresent("Fields do not match");
-}
-
-public function testRegisterFailsWithBadEmail()
-{
-    $user = $this->randomUser();
-    $user['email'] = 'test';
-    $this->doRegister($user);
-    $this->assertTextPresent("An email address must contain a single @");
-    $this->byId('email')->clear();
-    $this->byId('email')->value('@bob.com');
-    $this->byId('form.submitted')->click();
-    $this->assertTextPresent("The username portion of the email address is invalid");
-    $this->byId('email')->clear();
-    $this->byId('email')->value('test@bob');
-    $this->byId('form.submitted')->click();
-    $this->assertTextPresent("The domain portion of the email address is invalid");
-}
-```
-
-Now you have a basic
-conceptual framework that you can use to start writing tests for your apps. 
-
-All we're doing is 
-using Selenium to input values and make sure that the app's response is
-exactly what we want. Simple as they are, these login/signup tests are extremely valuable. 
-Running them before every deployment will help ensure that you can 
-welcome new users into your community and get them where they need to go.
-
-## Testing local apps with Sauce Connect
-
-
-Developing apps on `localhost` is extremely quick and efficient. However, `localhost` is not a publicly-accessible
-address on the Internet, so by default the browsers in the Sauce Labs cloud cannot
-load and test an app that you are running locally.
-
-To get around this limitation, we created [Sauce Connect](https://saucelabs.com/docs/connect).
-Sauce Connect uses a secure tunnel protocol that gives specific Sauce machines
-access to your local network. Sauce Connect sessions are sandboxed
-from outside data flows and are a convenient way to securely test apps that
-aren't ready to be deployed on the Internet.
-
-To download Sauce Connect for the tutorial project, edit the `composer.json` file in the
-`sauce-tutorial` directory by putting a comma after the `sauce/sausage` line and adding the `sauce/connect` line so
-that it looks like this:
-
-```json
-{
-  "require": {
-    "sauce/sausage": ">=0.8.1",
-    "sauce/connect": ">=3.0"
-  }
-}
-```
-
-Now run this command to download Sauce Connect:
-
-```bash
-php composer.phar update
-```
-
-Sauce Connect is a fairly large binary file, so it may take a little while to
-download. After it finishes downloading run this command:
-
-**Mac/Linux:**
-
-```bash
-vendor/bin/sauce_connect
-```
-
-
-**Windows:**
-
-```bat
-vendor\bin\sauce_connect.bat
-```
-
-
-Since we already configured the Sauce credentials in an earlier tutorial,
-Sauce Connect starts up without further ado. It takes a while to load because
-it's provisioning a new clean virtual machine to handle the
-secure connection. When it says "Connected! You may start your tests..." you
-are good to go.
-
-When Sauce Connect is running, all tests that you run using your Sauce Labs
-account use the network on the machine where Sauce Connect is located.
-
-For more information about Sauce Connect, or to download and configure the binary on your own, see the [Sauce Connect documentation](https://saucelabs.com/docs/connect).
-
-## Running tests in parallel
-
-
-As you may recall from earlier tutorials, Selenium tests can take a long time!
-They may take even longer on Sauce because we start each test on a new virtual
-machine that has never been used before (don't worry, we don't charge you for
-the spin-up time).
-
-The solution to this is to run more than one test at a time. Since we have
-thousands of clean virtual machines on standby, we encourage you to run as many
-tests as you can at once. For an overview of how many tests you can run in
-parallel, see the parallelization section of our [plan
-page](http://saucelabs.com/pricing).
-
-Because PHPUnit doesn't have built-in parallel test execution, we work around
-this by using [Paratest](http://github.com/brianium/paratest), a wrapper around
-PHPUnit that is bundled with Sausage.  Let's try running some tests in parallel
-using Paratest.
-
-Navigate to the project directory and run the following command. This command
-specifies the path to the test file we want to run and tells Paratest that we
-want to simultaneously run two instances of PHPUnit.
-
-**Mac/Linux:**
-
-```bash
-vendor/bin/paratest -p 2 -f --phpunit=vendor/bin/phpunit WebDriverDemo.php
-```
-
-**Windows:**
-
-```bat
-vendor\bin\paratest.bat -p 2 -f --phpunit=vendor\bin\phpunit.bat WebDriverDemo.php
-```
-
-
-Your tests should run approximately twice as fast as before. You can see the
-test running simultaneously on your [Sauce tests
-page](https://saucelabs.com/tests/). Depending on your Sauce account level,
-consider increasing the number of processes to speed things up even more.
-
-By default tests running in parallel may
-execute in any order. In the next section we'll talk about
-this and discuss some tips for avoiding potential snags when speeding up
-test suites using parallelism.
-
-## Tips for better Selenium test performance
-
-
-In this section we'll share some tips about how to improve the performance of Selenium tests.
-
-Avoid test dependencies
----
-
-Simply put, dependencies between tests prevent your tests from being able to run in parallel. And running your tests in parallel is by far
-the best way to speed up the execution of your entire test suite. It's much
-easier to add a virtual machine than to try to figure out how to squeeze out another second
-of performance from a single test.
-
-What are dependencies? Imagine if we had a test suite with these two tests:
-
-```php
-<?php
-function testLogin()
-{
-    // do some stuff to trigger a login
-    $this->assertEquals("My Logged In Page", $this->title());
-}
-
-function testUserOnlyFunctionality()
-{
-    $this->byId('userOnlyButton')->click();
-    $this->assertTextPresent("Result of clicking userOnlyButton");
-}
-```
-
-In the first function's pseudocode the `testLogin()` function triggers the
-browser to log in 
-and asserts that the login was successful. The second test clicks a button on the
-logged-in page and asserts that a certain result occurred.
-
-This test suite works fine as long as the tests run in order. But the
-assumption the second test makes (that we are already logged in) creates a 
-dependency on the first test. If these tests run at the same time, or if the
-second one runs before the first one, the browser's cookies will
-not yet allow Selenium to access the logged-in page and the second test fails.
-
-The right way to get rid of these dependencies is to make sure each test can 
-run completely independently of the other. Let's fix the example above so
-there are no dependencies:
-
-
-```php
-<?php
-function doLogin()
-{
-    // do some stuff to trigger a login
-    $this->assertEquals("My Logged In Page", $this->title());
-}
-
-function testLogin()
-{
-    $this->doLogin();
-}
-
-function testUserOnlyFunctionality()
-{
-    $this->doLogin();
-    $this->byId('userOnlyButton')->click();
-    $this->assertTextPresent("Result of clicking userOnlyButton");
-}
-```
-
-The main point is that it is dangerous to assume any state whatsoever when
-developing tests for your app. Instead, find ways to quickly generate
-desired states for individual tests the way we did above with the `doLogin()` function 
--- it generates a logged-in state instead of assuming it. You might
-even want to develop an API for the development and test versions of your app
-that provides URL shortcuts that generate common states. For example, 
-a URL that's only available in test that creates a random user account and 
-logs it in automatically.
-
-Don't use brittle locators
----
-WebDriver provides a number of [locator strategies](http://code.google.com/p/selenium/wiki/JsonWireProtocol#/session/:sessionId/element) for accessing elements on a webpage. 
-It's tempting to use complex XPath expressions like `//body/div/div/*[@class="someClass"]`
-or CSS selectors like `#content .wrapper .main`. While these might work when
-you are developing your tests, they will almost certainly break when you make
-unrelated refactoring changes to your HTML output.
-
-Instead, use sensible semantics for CSS IDs and form element names, and try to
-restrict yourself to using `$this->byId()` or `$this->byName()`. This makes it 
-much less likely that you'll inadvertently break your page by shuffling some
-lines of code around.
-
-Use spinAsserts
-----
-One issue with Selenium is that it doesn't know when it's supposed to wait
-before executing the next command. When people click a submit button,
-they know not to check for text or try another action until the next page
-loads. Selenium, however, immediately executes the next command. If
-the next command is part of an assertion in your code the assertion may
-fail, even though if Selenium had waited a little bit longer it would have succeeded.
-
-The solution is to use a special kind of assertion called a spinAssert that was introduced earlier in this tutorial. 
-This kind of assertion only fails after retrying periodically over a specified amount of time.
-
-The definition of the spinAssert function in Sausage looks like this:
-
-```php
-<?php
-public function spinAssert($msg, $test, $args=array(), $timeout=10)
-```
-
-* `$msg` is the message that's passed to the Exception if the spinAssert fails.
-* `$test` is the function we are going to use for the assertion. It can be:
-  * An [anonymous function](http://php.net/manual/en/functions.anonymous.php)
-  * A string representing a function name
-  * An array of the form ```array($class_name, $method_name)```
-* `$args` is an array of arguments that's passed to the test function.
-* `$timeout` is an integer representing the number of seconds to spin.
-
-The spinAssert function calls the `$test` function once every second until
-the `$timeout` seconds limit is reached. If the `$test` function returns a true 
-value the assertion succeeds If the `$test` function returns a false value the test is 
-retried every second until it hits `$timeout` seconds. If it hits `$timeout` seconds the
-assertion fails.
-
-If spinAssert example earlier in the tutorial didn't have a spinAssert it would have looked like this:
-
-```php
-<?php
-public function testSubmitComments()
-{
-    $comment = "This is a very insightful comment.";
-    $this->byId('comments')->click();
-    $this->keys($comment);
-    $this->byId('submit')->submit();
-    $this->assertEquals($this->byId('your_comments')->text(), "Your comments: $comment");
-}
-```
-
-The trouble with this is that after Selenium hits the submit button it 
-immediately gets the text from the comment results box (the element 
-id `#your_comments`). If the page didn't have time to get updated from the
-server the assertion fails even though it would have succeeded if Selenium had waited a 
-bit longer. 
-
-Let's look at the same function using spinAssert:
-
-```php
-<?php
-public function testSubmitComments()
-{
-    $comment = "This is a very insightful comment.";
-    $this->byId('comments')->click();
-    $this->keys($comment);
-    $this->byId('submit')->submit();
-    $driver = $this;
-
-    $comment_test =
-        function() use ($comment, $driver)
-        {
-            return ($driver->byId('your_comments')->text() == "Your comments: $comment");
-        }
-    ;
-
-    $this->spinAssert("Comment never showed up!", $comment_test);
-
-}
-```
-
-In this function, we create an anonymous closure called `$comment_test` that
-returns true if the comments field has the right text in it and false
-if it doesn't. Then we call `$this->spinAssert` and pass it the test function.
-We're using the default timeout of 10 seconds, so our script keeps retrying 
-the Selenium `text()` command until its value is what we expect or we hit 10 seconds.
-
-Using spinAssert functions is a great way to make tests less brittle and more
-accepting of differences in network speeds, surges in traffic, and other challenges in the test environment.
-
-## Integrating Sauce into existing PHPUnit WebDriver Tests
-
-
-Do you already have a test suite running WebDriver tests? While we recommend
-using Sausage, it's also possible to integrate with Sauce in whichever test framework you
-happen to be using -- you'll just miss out on a lot of features you get for
-free in Sausage (like automatic pass/fail reporting).  Let's take a look at an
-example `PHPUnit_Extensions_Selenium2TestCase` test suite, so we can see what
-needs to be modified to have it running on Sauce.
-
-Before Sauce Integration
-----
-Below is a very simple example test suite consisting of two tests. Right now,
-this test suite directly subclasses `PHPUnit_Extensions_Selenium2TestCase`,
-and thereby uses a locally-running Firefox browser:
-
-```php
-<?php
-
-require_once 'vendor/autoload.php';
-
-class WebDriverExample extends \PHPUnit_Extensions_Selenium2TestCase
-{
-
-    protected $start_url = 'http://saucelabs.com/test/guinea-pig';
-
-    public static $browsers = array(
-        array(
-            'browserName' => 'firefox',
-            )
-        )
-    );
-
-    public function testTitle()
-    {
-        $this->assertContains("I am a page title", $this->title());
-    }
-
-    public function testLink()
-    {
-        $link = $this->byId('i am a link');
-        $link->click();
-        $this->assertContains("I am another page title", $this->title());
-    }
-}
-```
-
-After Sauce Integration
-----
-Integrating is simple: we simply add a set of desired capabilities, and point
-to a different Selenium server, one in our cloud of browsers. To ensure only
-you have access to the tests you run, we'll need to augment the server address
-with your Sauce username and access key (found on your [account page](http://saucelabs.com/account)).
-
-Note that in this example, we assume these values are stored in PHP constants
-(`SAUCE_USERNAME` and `SAUCE_ACCESS_KEY` respectively), defined wherever you like.
-
-```php
+Integrating Sauce is simple. We add a set of desired capabilities, and point
+to a different Selenium server on the Sauce cloud. We will need to augment the
+server address with your Sauce username and access key to ensure secure access
+to the tests you run.
+````php
 <?php
 
 require_once 'vendor/autoload.php';
 
 define('SAUCE_HOST', SAUCE_USERNAME.':'.SAUCE_ACCESS_KEY.'@ondemand.saucelabs.com');
 
-class WebDriverExample extends \PHPUnit_Extensions_Selenium2TestCase
+class WebTest extends PHPUnit_Extensions_Selenium2TestCase
 {
-    protected $start_url = 'http://saucelabs.com/test/guinea-pig';
-
-    public static $browsers = array(
+ protected $start_url = 'http://saucelabs.com/test/guinea-pig';
+  
+ public static $browsers = array(
         array(
             'browserName' => 'firefox',
             'host' => SAUCE_HOST,
@@ -1157,23 +138,187 @@ class WebDriverExample extends \PHPUnit_Extensions_Selenium2TestCase
             )
         )
     );
+ 
+    protected function setUp()
+    {
+        $this->setBrowserUrl('');  
+    }
 
     public function testTitle()
     {
+        $this->url($this->start_url);
         $this->assertContains("I am a page title", $this->title());
     }
-
-    public function testLink()
-    {
-        $link = $this->byId('i am a link');
-        $link->click();
-        $this->assertContains("I am another page title", $this->title());
-    }
 }
-```
+?>
+````
 
-So you can see, getting going on Sauce with your existing tests is really quite
-simple. However, by migrating to Sausage you get several useful features in
-addition to a more convenient interface. Pass/fail reporting, spinAsserts,
-and more streamlined browser configuration, etc...
+Note that in this example, we assume these values are stored in PHP constants
+(```SAUCE_USERNAME``` and ```SAUCE_ACCESS_KEY`` respectively), defined wherever you like.
+
+So you can see, getting started on Sauce with your existing tests is really
+quite simple
+
+## Running Tests Against Local Applications
+
+Developing apps on a localhost is quick and efficient. However, the drawback
+is that localhost is not a publicly-accessible address on the Internet, so by
+default the browsers in the Sauce Labs cloud cannot load and test an app that
+you are running locally.
+
+Sauce Connect uses a secure tunnel protocol that gives specific Sauce machines
+access to your local network. Sauce Connect sessions are sandboxed from
+outside data flows and are a convenient way to securely test apps that aren't
+ready to be deployed on the Internet.
+
+Sauce Connect is bundled as a separate composer package (sauce/connect). This
+can be added to your _composer.json_ requirements. Edit the _composer.json_
+file in your project directory by putting a comma after the sauce/sausage line
+and adding the sauce/connect line so that it looks like this:
+````
+"require": {
+    "sauce/sausage": ">=0.8.1",
+    "sauce/connect": ">=3.0"
+````
+
+### Downloading Sauce Connect
+
+Run this command to download Sauce Connect:
+
+```php composer.phar update```
+
+Note: Sauce Connect is a fairly large binary file, so it may take a little
+while to download.
+
+### Installing Sauce Connect
+
+Run the following command to install Sauce Connect on the respective operating
+systems:
+
+/*for installing Sauce Connect on Windows*/
+
+```vendor\bin\sauce_connect.bat```
+
+/*for installing Sauce Connect on Mac/Linux*/
+
+```vendor/bin/sauce_connect``
+
+Since you have already configured the Sauce credentials in previous steps,
+Sauce Connect starts up automatically. It can take some time to load because
+it uses a new clean virtual machine to handle the secure connection.
+
+When you see "connected! You may start your tests…" you are ready to go. Your
+tests can now access localhost or a firewalled application.
+
+When using Sauce Connect, all tests you run from your account use the same
+network as the machine where Sauce Connect is located.
+
+For more information about Sauce Connect, or to download and configure it on
+your own, see [Sauce Connect
+documentation](https://docs.saucelabs.com/reference/sauce-connect/).
+
+## Running Tests in Parallel
+
+Now that you're running tests on Sauce, you may wonder how you can run your
+tests faster. One way to increase speed is by running tests in parallel across
+multiple virtual machines.
+
+Note: Tests can be run in parallel at two levels, and you can run your tests
+in parallel across multiple browsers. For example, if you have 10 tests and
+want to run on five browsers this would be parallelism of five. You can also
+run tests across browsers and each test in parallel. Using our previous
+example this would be more like 50 parallel tests. Doing this requires that
+your tests are written in a way that they do not collide with one another. For
+more on this see the [Selenium WebDriver - Running Your Tests in
+Parallel](https://saucelabs.com/selenium/selenium-webdriver) blog.
+
+### Parallel Tests in PHPUnit
+
+Since PHPUnit doesn't have built-in parallel test execution, we can work
+around this by using Paratest, a command line tool for running PHPUnit that is
+bundled with Sausage. Let's try running some tests in parallel using Paratest.
+
+Navigate to the project directory and run the following command:
+
+/*For Mac/Linux operating system*/
+
+```vendor/bin/paratest -p 2 -f --phpunit=vendor/bin/phpunit WebDriverDemo.php```
+
+/*For Windows operating system*/
+
+```vendor\bin\paratest.bat -p 2 -f --phpunit=vendor\bin\phpunit.bat
+WebDriverDemo.php```
+
+This command specifies the path to the test file we want to run and tells
+Paratest that we want to simultaneously run two instances of PHPUnit.
+
+Your tests should run approximately twice as fast as before. You can see the
+test running simultaneously on your Sauce tests page. Depending on your Sauce
+account level, consider increasing the number of processes to speed things up
+even more.
+
+By default tests running in parallel may be executed in any order. In the next
+section we'll talk about this and discuss some tips for avoiding potential
+snags while speeding up test suites using parallelism.
+
+## Best Practices
+
+###Automatic Test Naming
+
+By default, Sauce Labs doesn't know how to display the name of your test.
+Sausage comes up with a good name (TestClass::testFunction) and reports it
+with your test so it's easy to find on your tests page.
+
+###Automatic Test Status Reporting
+
+By default there is e no way for Sauce Labs to know whether a particular test
+was passed or failed. Sausage catches any failed assertions and reports the
+status of the test to Sauce after it's complete. As you're looking at your log
+of tests you can easily see which passed and which failed.
+
+###Automatic Authorized Link Generation
+
+Upon test failure, Sausage generates an authorized link to the failed job
+report on the Sauce Labs website, to facilitate reporting to people who need
+to know the details of the test. The job remains private (unless you change
+the status yourself), but others can follow the link without needing to log in
+with your credentials.
+
+###Using Build IDs
+
+If you're running your tests as part of your build, you can define a build ID,
+either by updating the browser arrays to include a 'build' parameter, or (more
+reasonably), defining an environment variable SAUCE_BUILD, like so:
+
+`SAUCE_BUILD=build-1234 vendor/bin/phpunit MyAwesomeTestCase.php`
+
+### Using SpinAsserts
+
+SpinAsserts are really useful as well. Luckily, Sausage comes with a
+SpinAssert framework built in. Let's say we want to perform a check and we're
+not exactly sure how quickly the state will change to what we want. We can do
+this:
+````
+public function testSubmitComments()
+{
+    $comment = "This is a very insightful comment.";
+    $this->byId('comments')->click();
+    $this->keys($comment);
+    $this->byId('submit')->submit();
+    $driver = $this;
+
+    $comment_test = function() use ($comment, $driver) {
+        return ($driver->byId('your_comments')->text() == "Your comments: $comment");
+    };
+
+    $this->spinAssert("Comment never showed up!", $comment_test);
+}
+````
+This will submit a comment and wait for up to 10 seconds for the comment to
+show up before declaring the test failed.
+
+The spinWait function is similar, and allows you to wait for a certain
+condition without necessarily asserting anything.
+
+
 
