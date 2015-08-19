@@ -1,3 +1,11 @@
+{
+  title: "PHP",
+  description: "How to run Selenium tests on Sauce Labs using PHP",
+  category: 'Tutorials',
+  index: 2,
+  image: '/images/tutorials/php.png'
+}
+
 ## Getting Started with PHP
 
 Sauce Labs is a cloud platform for executing automated and manual mobile and web tests. Sauce Labs supports running automated tests with Selenium WebDriver (for web applications) and Appium (for native and mobile web applications).
