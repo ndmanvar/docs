@@ -1,8 +1,8 @@
 {
-  title: "C# Quickstart",
+  title: "C#",
   description: "How to run Selenium tests on Sauce Labs using C#",
   category: 'Tutorials',
-  index: 11,
+  index: 10,
   image: "/images/tutorials/csharp.png"
 }
 
