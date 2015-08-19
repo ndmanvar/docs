@@ -21,6 +21,7 @@ In this tutorial we'll show you how to run a test with Selenium WebDriver and Ja
 5. [Running Tests in Parallel](#running-tests-in-parallel)
 6. [Reporting to the Sauce Labs Dashaboard](#reporting-to-the-sauce-labs-dashboard)
 
+
 ## Quickstart
 Configuring Selenium tests to run on Sauce Labs is simple. The basic change is just to switch from using a local Selenium driver:
 
@@ -334,7 +335,7 @@ TestNG has built in support for running tests in parallel. All you need to do is
 
 Don't forget to match your thread count to your concurrency limit. 
 
-##Reporting to the Sauce Labs Dashboard
+## Reporting to the Sauce Labs Dashboard
 Follow these best practices to enhance your user experience while using Sauce Labs with Java:
 
 ###### 1. Reporting Test Results
