@@ -1176,4 +1176,3 @@ So you can see, getting going on Sauce with your existing tests is really quite
 simple. However, by migrating to Sausage you get several useful features in
 addition to a more convenient interface. Pass/fail reporting, spinAsserts,
 and more streamlined browser configuration, etc...
-
