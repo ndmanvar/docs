@@ -81,14 +81,14 @@ Sausage set up might take a few minutes. The set up checks for a number of
 requirements and if any are not met, notification messages are displayed on
 your screen. Fix the issues, if any, and then run installation command again.
 
-##Quick Start
+## Quick Start
 
 Now that you have PHP and Sausage in place, let's try running a simple test to
 make sure that everything works.
 
 If you're on a Windows system, run this command from your project directory:
 
-```vendor\bin\phpunit.bat WebDriverDemo.php```
+s```vendor\bin\phpunit.bat WebDriverDemo.php```
 
 If you're on a Mac/Linux system, run this command from your project directory:
 
@@ -263,20 +263,20 @@ snags while speeding up test suites using parallelism.
 
 ## Best Practices
 
-###Automatic Test Naming
+### Automatic Test Naming
 
 By default, Sauce Labs doesn't know how to display the name of your test.
 Sausage comes up with a good name (TestClass::testFunction) and reports it
 with your test so it's easy to find on your tests page.
 
-###Automatic Test Status Reporting
+### Automatic Test Status Reporting
 
 By default there is e no way for Sauce Labs to know whether a particular test
 was passed or failed. Sausage catches any failed assertions and reports the
 status of the test to Sauce after it's complete. As you're looking at your log
 of tests you can easily see which passed and which failed.
 
-###Automatic Authorized Link Generation
+### Automatic Authorized Link Generation
 
 Upon test failure, Sausage generates an authorized link to the failed job
 report on the Sauce Labs website, to facilitate reporting to people who need
@@ -284,7 +284,7 @@ to know the details of the test. The job remains private (unless you change
 the status yourself), but others can follow the link without needing to log in
 with your credentials.
 
-###Using Build IDs
+### Using Build IDs
 
 If you're running your tests as part of your build, you can define a build ID,
 either by updating the browser arrays to include a 'build' parameter, or (more
