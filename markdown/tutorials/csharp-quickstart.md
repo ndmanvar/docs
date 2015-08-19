@@ -199,9 +199,9 @@ namespace SauceLabs.SeleniumExamples
     internal static class Constants
     {
         /// \<summary\>name of the sauce labs account that will be used\</summary\>
-        internal const string SAUCE\_LABS\_ACCOUNT\_NAME = "Your Account Name";
+        internal const string SAUCE\_LABS\_ACCOUNT\_NAME = "sauceUsername";
         /// \<summary\>account key for the sauce labs account that will be used\</summary\>
-        internal const string SAUCE\_LABS\_ACCOUNT\_KEY = "Your Access Key";
+        internal const string SAUCE\_LABS\_ACCOUNT\_KEY = "sauceAccessKey";
 
         // NOTE:
         // To change the maximum number of parallel tests edit DegreeOfParallelism in AssemblyInfo.cs
