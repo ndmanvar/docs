@@ -15,7 +15,7 @@ In this tutorial we'll show you how to run a test with Selenium WebDriver and Ja
 ## Table of Contents
 1. [Quickstart](#quickstart)
 1. [Prerequisites](#prerequisites)
-2. [Code Example](h#code-example)
+2. [Code Example](#code-example)
 3. [Running Tests on Sauce](#running-tests-on-sauce)
 4. [Running Against Local Applications](#running-tests-against-local-applications)
 5. [Running Tests in Parallel](#running-tests-in-parallel)
