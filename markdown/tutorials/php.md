@@ -34,9 +34,9 @@ website.
   2. Extract the content of the downloaded archive to _C:\PHP_.
   3. From the command prompt, navigate to _C:\PHP_ and prepare the php.ini file using these commands.
 
-    ```cd C:\PHP```
+```cd C:\PHP```
 
-    ```copy php.ini-development php.ini```
+```copy php.ini-development php.ini```
 
 ### Enabling the PHP curl Library
 
@@ -49,16 +49,16 @@ extension=php_openssl.dll
 ````
 ### Installing curl/OpenSSL Support for PHP
 
-  1. Right-click [mk-ca-bundle.vbs](https://raw.github.com/bagder/curl/master/lib/mk-ca-bundle.vbs) and select **Save link as...** , and then save the ```mk-ca-bundle.vbs``` file to your **C:\** directory.
-  2. From the command prompt, run the ```mk-ca-bundle.vbs``` file using this command:
+1. Right-click [mk-ca-bundle.vbs](https://raw.github.com/bagder/curl/master/lib/mk-ca-bundle.vbs) and select **Save link as...** , and then save the ```mk-ca-bundle.vbs``` file to your **C:\** directory.
+2. From the command prompt, run the ```mk-ca-bundle.vbs``` file using this command:
 
-    ```C:\.mk-ca-bundle.vbs```
+```C:\.mk-ca-bundle.vbs```
 
-  1. In the [PHP] section of the ```PHP.ini``` file, add this line of code:
+1. In the [PHP] section of the ```PHP.ini``` file, add this line of code:
 
-    ```curl.cainfo = c:\ca-bundle.crt```
+```curl.cainfo = c:\ca-bundle.crt```
 
-  1. Save and close the ```PHP.ini``` file.
+1. Save and close the ```PHP.ini``` file.
 
 ### Installing Sausage
 
@@ -71,10 +71,10 @@ These instructions are for setting up Sausage on Windows operating system. For
 more information about setting up Sausage on other operating systems, see
 [Sausage Setup](https://github.com/jlipps/sausage).
 
-  1. Right-click [givememysausage.php](https://raw.githubusercontent.com/jlipps/sausage-bun/master/givememysausage.php), select **Save link as...** and save the ```givememysausage.php``` file to your project directory.
+1. Right-click [givememysausage.php](https://raw.githubusercontent.com/jlipps/sausage-bun/master/givememysausage.php), select **Save link as...** and save the ```givememysausage.php``` file to your project directory.
   2. Navigate to your project directory in the command prompt and run the ```givememysausage.php``` file using this command:
 
-    ```php givememysausage.php -t YOUR_USERNAME YOUR_ACCESS_KEY```
+```php givememysausage.php -t YOUR_USERNAME YOUR_ACCESS_KEY```
 
 This will download Sausage and all its dependences (PHPUnit for instance). The
 Sausage set up might take a few minutes. The set up checks for a number of
