@@ -6,283 +6,242 @@
   image: "/images/tutorials/java.png"
 }
 
-Questions or Problems with this Tutorial? Go to [our Forum topic for this Java tutorial.] (https://support.saucelabs.com/entries/57636760-Java-Tutorial-Questions-Problems)
+## Getting Started with Java
 
-## Getting Started
+Sauce Labs is a cloud platform for executing automated and manual mobile and web tests. Sauce Labs supports running automated tests with Selenium WebDriver (for web applications) and Appium (for native and mobile web applications).
 
-We suggest that you consider using [Maven](http://maven.apache.org) to build your Java project and either the 
-[JUnit](http://www.junit.org) or the [TestNG](http://www.testng.org) library to write Selenium tests. While neither 
-Maven, JUnit nor TestNG are required to write Java tests for Sauce, this is the framework that we'll use for this 
-tutorial.
+In this tutorial we'll show you how to run a test with Selenium WebDriver and Java on Sauce Labs.
 
-Although this tutorial is not a comprehensive guide for getting Java and Maven set up on
-your system, here are some guidelines:
+## Table of Contents
+1. [Quickstart](#quickstart)
+1. [Prerequisites](#prerequisites)
+2. [Code Example](h#code-example)
+3. [Running Tests on Sauce](#running-tests-on-sauce)
+4. [Running Against Local Applications](#running-tests-against-local-applications)
+5. [Running Tests in Parallel](#running-tests-in-parallel)
+6. [Reporting to the Sauce Labs Dashaboard](#reporting-to-the-sauce-labs-dashboard)
 
-## Java and Maven Setup
-
-You will need to use **JDK** 1.6 (or higher) (*not the JRE*) and Maven 2.2.1 (or higher) in order to complete this tutorial.
-
-Download and install [Java](http://www.java.com/en/download/manual.jsp) if it isn't already installed on your system.
-
-**Note:** Ensure the **JAVA_HOME** environment variable is defined appropriately.
-For MacOS, add the following to ~/.bash_profile:
-```bash 
-export JAVA_HOME="$( /usr/libexec/java_home )"
-```
-
-Go to the [Maven download](http://maven.apache.org/download.html) page to download the Maven binary distribution and extract it to your file system.  Add the `bin` directory to your path, for example,
-
-On Mac or Linux:
-
-```bash
-export PATH=YOUR_MAVEN_PATH/bin:$PATH
-```
-
-On Windows:
-
-```bash
-set PATH=YOUR_MAVEN_PATH/bin:%PATH%
-```
-## Setting Up a Project
-Setting up a project is a process of either building one from scratch or pulling a pre-existing project. For this tutorial you will pull a sample project we'll call *quickstart-webdriver-junit* (The artifact) from the project *com.saucelabs* (The GroupId). Refer to the [maven documentation](http://maven.apache.org/guides/index.html) for more information about these maven terms.
-
-First, create a project directory:
-```bash
-mkdir -p ~/sauce-tutorial/sauce-project && cd ~/sauce-tutorial/sauce-project
-```
-Next, download and install a sample project using your chosen testing framework using one of these Maven commands. You will be prompted to enter a group id (for example, `com.yourcompany`), artifact id (for example, `sauce-project`), version (defaults to `1.0-SNAPSHOT`), and package (default to the group id).
-**Note:** This step uses your Sauce username and access key. You can find your Sauce access key on your [Sauce account page](https://saucelabs.com/account).
-**JUnit example:**
-```bash
-mvn archetype:generate -DarchetypeGroupId=com.saucelabs -DarchetypeArtifactId=quickstart-webdriver-junit -DgroupId=com.yourcompany -DartifactId=sauce-project -Dversion=1.0-SNAPSHOT -Dpackage=com.yourcompany -DuserName=sauceUserName -DaccessKey=sauceAccessKey
-```
-**TestNG example:**
-```bash
-mvn archetype:generate -DarchetypeGroupId=com.saucelabs -DarchetypeArtifactId=quickstart-webdriver-testng -DgroupId=com.yourcompany -DartifactId=sauce-project -Dversion=1.0-SNAPSHOT -Dpackage=com.yourcompany -DuserName=sauceUserName -DaccessKey=sauceAccessKey
-```
-**Note:** There may be a few prompts, use the Defaults except for ```Y: :``` enter ```Y```.
-There should be quite a bit of output. If there are any errors check the ```-D``` values above and ensure there are no errors. If values are left off the command line, they will be prompted for instead.
-
-## Running Your First Test
-
-Now that you've got a JUnit or TestNG Maven project created, let's run the tests that were created by the Maven
-archetype generation to make sure that everything works.
-
-Run this command from your `sauce-project` directory:
-```bash
-mvn test
-```
-This launches Maven and will download the dependencies, compiles the source code and run the tests. After a few
-moments you should see that JUnit/TestNG has started. You might not see any output instantaneously, but
-eventually you will see the following output:
-```
--------------------------------------------------------
- T E S T S
--------------------------------------------------------
-Running com.saucelabs.SampleSauceTest
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 29.854 sec
-Running WebDriverTest
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 22.106 sec
-
-Results :
-
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
-```
-(The exact output will depend on the test framework you chose, but you
-should see all tests passing.)
-
-
-While the tests are running, navigate to your [Sauce Labs tests page](https://saucelabs.com/tests).
-From there you'll be able to see each test as it queues, runs, and finishes.
-You'll notice that each test has a name -- that information is sent
-automatically at the beginning of each test.
-
-Right now each test runs one at a time because the sample project created by the archetype isn't setup to run multiple tests in parallel, however we'll describe how to enable this in one of the later tutorials. For now,
-take advantage of the serial nature of the tests and click on a running test
-on your tests page. You'll jump to a detail view where, if you caught the
-test while it was running, you'll be able to watch Selenium controlling the
-browser. When the test finishes, the page updates with a video of the test
-and a list of the various Selenium commands that were sent.
-
-If you don't catch a test while it's running, you can click the test's link on the
-[Sauce Labs tests page](https://saucelabs.com/tests) to see the test's details and video.
-
-Now that you know that your setup worked and you were able to run your first
-test suite on Sauce, let's look at what actually happened under the
-hood. The simplest test is in the file
-`src/test/java/com/yourcompany/WebDriverTest.java`.
-
-The tests are very similar for both JUnit and TestNG, so we'll
-only describe the JUnit test in detail.
-
-## JUnit
+## Quickstart
+Configuring Selenium tests to run on Sauce Labs is simple. The basic change is just to switch from using a local Selenium driver:
 
 ```java
-public class WebDriverTest {
+WebDriver driver = new FirefoxDriver();
+```
 
-    private WebDriver driver;
+To using a remote driver pointed at ondemand.saucelabs.com, specifying your Sauce Labs account credentials and desired browser configuration:
 
-    @Before
-    public void setUp() throws Exception {
-        // Choose the browser, version, and platform to test
-        DesiredCapabilities capabilities = DesiredCapabilities.firefox();
-        capabilities.setCapability("version", "17");
-        capabilities.setCapability("platform", Platform.XP);
-        // Create the connection to Sauce Labs to run the tests
-        this.driver = new RemoteWebDriver(
-                new URL("http://sauceUsername:sauceAccessKey@ondemand.saucelabs.com:80/wd/hub"),
-                capabilities);
-    }
+```java
+DesiredCapabilities caps = DesiredCapabilities.firefox();
+caps.setCapability("platform", "Windows 7");
+caps.setCapability("version", "38.0");
+WebDriver driver = new RemoteWebDriver(new URL("http://YOUR_USERNAME:YOUR_ACCESS_KEY@ondemand.saucelabs.com:80/wd/hub"), caps);
+```
 
-    @Test
-    public void webDriver() throws Exception {
-        // Make the browser get the page and check its title
-        driver.get("http://www.amazon.com/");
-        assertEquals("Amazon.com: Online Shopping for Electronics, Apparel, Computers, Books, DVDs & more", driver.getTitle());
-    }
+To get things working really well, we recommend adding a number of features to your setup from here:
+ - _test parallelization_
+ - _metadata reporting via our API_
+ - _local network access with Sauce Connect_
 
-    @After
-    public void tearDown() throws Exception {
-        driver.quit();
-    }
+We'll walk you through setting those things up one at a time so that you can see how each piece works.
 
+## Prerequisites
+Before running automated tests on Sauce Labs you must install JDK 1.6 (or higher) (not JRE).
+
+You will also need to install the selenium-java client. It can be found under the "Selenium Client & WebDriver Language Bindings" section at http://www.seleniumhq.org/download/. Download and unzip the selenum-java client.
+
+__Note__: *To run tests in parallel or with a test framework like TestNG or Junit you will need to install a project management and comprehension tool like Maven or Ant, as we'll explain in the section on [Running Tests in Parallel](#running-tests-in-parallel).*
+
+## Code Example  
+
+Now let’s take a look at some simple Java code that verifies the title of the Amazon.com home page. This example test doesn't have all the features we'd like, but it contains all the basics required to run an automated test on Sauce Labs:
+
+```java
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
+
+import java.net.URL;
+
+public class SampleSauceTest {
+
+  public static final String USERNAME = System.getenv("SAUCE_USERNAME");
+  public static final String ACCESS_KEY = System.getenv("SAUCE_ACCESS_KEY");
+  public static final String URL = "http://" + USERNAME + ":" + ACCESS_KEY + "@ondemand.saucelabs.com:80/wd/hub";
+
+  public static void main(String[] args) throws Exception {
+
+    DesiredCapabilities caps = DesiredCapabilities.chrome();
+    caps.setCapability("platform", "Windows XP");
+    caps.setCapability("version", "43.0");
+
+    WebDriver driver = new RemoteWebDriver(new URL(URL), caps);
+    
+    /**
+    * Goes to Sauce Lab's guinea-pig page and prints title
+    */
+    
+    driver.get("https://saucelabs.com/test/guinea-pig");
+    System.out.println("title of page is: " + driver.getTitle());
+
+    driver.quit();
+  }
 }
 ```
+You can use these commands to compile and run a Java test class. The javac command is used to compile the Java test class and create a .class file. For instance, the SampleSauceTest.java references all of the dependent Jar files as shown in this code sample.
 
-Let's break this test class down, chunk by chunk. First, we use the
-`setUp()` method to initialize the browser testing environment we will
-need for the tests:
+__Note:__ You will have to install the selenium-java client in the same directory where this test lives. The latest version of selenium at the time of writing this doc was 2.46.0. If not using 2.46.0, Please substitue the downloaded version for 2.46.0.
 
-```java
-    @Before
-    public void setUp() throws Exception {
-        // Choose the browser, version, and platform to test
-        DesiredCapabilities capabilities = DesiredCapabilities.firefox();
-        capabilities.setCapability("version", "17");
-        capabilities.setCapability("platform", Platform.XP);
-        // Create the connection to Sauce Labs to run the tests
-        this.driver = new RemoteWebDriver(
-                new URL("http://sauceUsername:sauceAccessKey@ondemand.saucelabs.com:80/wd/hub"),
-                capabilities);
-    }
+For Mac or Linux:
+```
+    javac -cp ".:./selenium-2.46.0/selenium-java-2.46.0.jar:./selenium-2.46.0/libs/*" SampleSauceTest.java
 ```
 
-This method is run before every test in the class (by virtue of the
-JUnit `org.junit.Before` annotation). We create an
-`org.openqa.selenium.remote.DesiredCapabilities` instance and use it
-to specify the browser version and platform. We then create an
-`org.openqa.selenium.remote.RemoteWebDriver` instance pointing at
-`ondemand.saucelabs.com` and using the `DesiredCapabilities`
-instance. This driver makes the tests use the specified browser and
-platform running on Sauce Labs servers to execute the test.
+For Windows:
+```
+    javac -cp ".;./selenium-2.46.0/selenium-java-2.46.0.jar;./selenium-2.46.0/libs/*" -encoding UTF-8 SampleSauceTest.java
+```
 
-Next, we write a simple test (annotated with org.junit.Test):
+
+__Note:__ *You need to specify the correct path for each Jar file in accordance to your system’s file structure.*
+
+The java command is used to run the compiled .class file.
+
+For Mac or Linux:
+```
+    java -cp ".:./selenium-2.46.0/selenium-java-2.46.0.jar:./selenium-2.46.0/libs/*" SampleSauceTest
+```
+
+For Windows:
+```
+    java -cp ".;./selenium-2.46.0/selenium-java-2.46.0.jar;./selenium-2.46.0/libs/*" SampleSauceTest
+```
+
+## Running Tests on Sauce
+Now let’s take a closer look at the code so you can begin writing tests, or set your existing tests to run on Sauce Labs.
+
+To run Selenium locally, you might initiate a driver instance for the browser that you want to test on as shown in the sample below:
 
 ```java
-@Test
-public void webDriver() throws Exception {
-    // Make the browser get the page and check its title
-    driver.get("http://www.amazon.com/");
-    assertEquals("Amazon.com: Online Shopping for Electronics, Apparel, Computers, Books, DVDs & more", driver.getTitle());
+WebDriver driver = new FirefoxDriver()
+```
+To run on Sauce, you need to use the general RemoteWebDriver instance instead of the browser-specific FirefoxDriver instance. You must then pass two parameters: a URL that points your test to Sauce Labs and DesiredCapabilities.
+
+__Note:__ *RemoteWebDriver is a standard Selenium interface. It allows you to perform all tests that you could do with a local Selenium test. The only difference is the URL that makes the test run using a browser on Sauce Labs' server.*
+
+Here is a full look at the setup component of our test:
+
+```java
+public class SampleSauceTest {
+
+/**
+* Creates an authentication instance using the supplied user name/access key.
+*/
+
+  public static final String USERNAME = System.getenv("SAUCE_USERNAME");
+  public static final String ACCESS_KEY = System.getenv("SAUCE_ACCESS_KEY");
+  public static final String URL = "http://" + USERNAME + ":" + ACCESS_KEY + "@ondemand.saucelabs.com:80/wd/hub";
+
+/**
+* Represents the browser type, version, and operating system to be used as part * of the test run.
+*/
+
+  public static void main(String[] args) throws Exception {
+
+    DesiredCapabilities caps = DesiredCapabilities.internetExplorer();
+    caps.setCapability("platform", "Windows 7");
+    caps.setCapability("version", "11.0");
+    caps.setCapability("name", "Sauce Sample Test");
+
+    WebDriver driver = new RemoteWebDriver(new URL(URL), caps);
+    ...
+
+  }
 }
 ```
+#### One: Pointing Tests to Run on Sauce
 
-The test accesses www.amazon.com and uses a [JUnit assertion](https://github.com/junit-team/junit/wiki/Assertions)
-to check that the page title has the expected value. The call to
-`driver.getTitle()` is a
-[Selenium RemoteWebDriver method](http://selenium.googlecode.com/git/docs/api/java/org/openqa/selenium/remote/RemoteWebDriver.html#getTitle%28%29)
-that tells Selenium to return the title of the
-current page.
+The first thing you need to send to RemoteWebdriver is a URL that authorizes your tests to be run on a browser in the Sauce Labs cloud. The URL contains your Sauce username and access key, which can be found on your account page.
 
+#### Two: Testing on Different Platforms
+The next thing we need to do is provide the test with information about what kind of platform(s) we want to run tests on.  
+
+Because we are not specifying FirefoxDriver() as we were in our local test, we must use DesiredCapabilities to specify what browser/OS combination(s) to spin up and execute against. DesiredCapabilities is a set of parameters and values that are sent to the Selenium server running in the Sauce Labs cloud. The parameters and values tell the Selenium server the specifications of the automated test that you plan to run. You can use the [Platforms Configurator](https://docs.saucelabs.com/reference/platforms-configurator/) to easily determine the correct DesiredCapabilities for your test.
+
+You can  define the DesiredCapabilities as shown in this example:
 ```java
-@After
-public void tearDown() throws Exception {
-  driver.quit();
-}
+DesiredCapabilities caps = new DesiredCapabilities();
+    caps.setCapability(CapabilityType.BROWSER_NAME, "Mozilla Firefox");
+    caps.setCapability(CapabilityType.VERSION, " 38.0.5");
+    caps.setCapability(CapabilityType.PLATFORM, "Windows 8.1");
+    caps.setCapability("name", "Sauce Sample Test");
+
 ```
 
-Finally, the `tearDown()` method is run after every test in the class (by virtue of the JUnit `org.junit.After` annotation).  We call `driver.quit()` to close the Selenium session.
+## Running Tests Against local Applications
+If your test application is not publicly available, you will need to use Sauce Connect so that Sauce can reach it. 
 
-## TestNG
+Sauce Connect is a tunneling app that allows you to execute tests securely when testing behind firewalls or on localhost. For more detailed information, please see the [Sauce Connect docs](https://docs.saucelabs.com/reference/sauce-connect/). 
 
-The TestNG version of the `WebDriverTest` class is very similar. The
-main difference is that the desired browser settings are provided as
-parameters using the `org.testng.annotations.Parameters` and
-`org.testng.annotations.Optional` annotations.
+## Running Tests in Parallel
+Now that you are running tests on Sauce, you may wonder how you can run your tests faster. One way to increase speed is by running tests in parallel across multiple virtual machines.
 
-```java
-public class WebDriverTest {
+Most Java users use one of two popular third party testing frameworks: TestNG or Junit. These links are for two example projects written in each. They are designed to run in parallel. You can clone them and add your own test cases if you want:
 
-    private WebDriver driver;
+1. https://github.com/ndmanvar/SeleniumJavaJunit
+2. https://github.com/ndmanvar/SeleniumJavaTestNG
 
-    @Parameters({"username", "key", "os", "browser", "browserVersion"})
-    @BeforeMethod
-    public void setUp(@Optional("sauceUsername") String username,
-                      @Optional("sauceAccessKey") String key,
-                      @Optional("mac") String os,
-                      @Optional("iphone") String browser,
-                      @Optional("5.0") String browserVersion,
-                      Method method) throws Exception {
+__Note:__ *Tests can be run in parallel at two levels, you can run your tests in parallel and you can run your tests in parallel across multiple browsers. For example, if you have 10 tests and run them serially on five browsers, this would be parallelism of five. You can also run tests across browsers and each test in parallel. Using our previous example, this would be 50 parallel tests (10 tests * 5 browsers). This requires that your tests are written in a way that they do not collide with one another. For more on this see Selenium WebDriver - [Running Your Tests in Parallel blog](https://saucelabs.com/selenium/selenium-webdriver).*
 
-        // Choose the browser, version, and platform to test
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-        capabilities.setBrowserName(browser);
-        capabilities.setCapability("version", browserVersion);
-        capabilities.setCapability("platform", Platform.valueOf(os));
-        capabilities.setCapability("name", method.getName());
-        // Create the connection to Sauce Labs to run the tests
-        this.driver = new RemoteWebDriver(
-                new URL("http://" + username + ":" + key + "@ondemand.saucelabs.com:80/wd/hub"),
-                capabilities);
-    }
+#### Maven, Pom and Dependencies
+The first thing we need to do regardless of which framework we have chosen is to install a project management tool like [Maven](https://maven.apache.org/download.cgi) or Ant. We'll use Maven in this tutorial. 
 
-    @Test
-    public void webDriver() throws Exception {
-        // Make the browser get the page and check its title
-        driver.get("http://www.amazon.com/");
-        assertEquals("Amazon.com: Online Shopping for Electronics, Apparel, Computers, Books, DVDs & more", driver.getTitle());
-    }
+Once Maven is installed we need to update the POM (Project Object Model), an XML file used in Maven. The pom.xml stores information about a project like configuration details used during the build process.
 
-    @AfterMethod
-    public void tearDown() throws Exception {
-        driver.quit();
-    }
+The dependency list is the most important feature of a POM. Almost every project depends upon other pieces to build and run the project correctly. The dependency list is used to download and link the compiled dependencies.
 
-}
+Three dependencies are required to run tests in parallel on Sauce:
+
+###### 1. Selenium Dependency 
+The first thing you need to do is add the following common Selenium dependency to the pom.xml file regardless of the framework you are using to write your tests. This tells your project which version of Selenium to use.
+
+```xml
+<dependency>
+    <groupId>org.seleniumhq.selenium</groupId>
+    <artifactId>selenium-java</artifactId>
+    <version>2.45.0</version>
+    <scope>test</scope>
+</dependency>
+
 ```
 
+###### 2. Framework Dependency
+This is where you specify whether your are using Junit or TestNG as your framework. 
 
-This is a very simple test, but the creation of the [`RemoteWebDriver`
-instance](http://selenium.googlecode.com/git/docs/api/java/index.html?org/openqa/selenium/remote/RemoteWebDriver.html)
-gives you access to the full power of Selenium.
+For Junit: 
 
-This test gives you the basic structure for any Selenium test that
-will run on Sauce Labs. Next, let's look at how you can use more
-Selenium functionality to create more realistic tests of your own web
-app.
+```xml
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.11</version>
+    <scope>test</scope>
+</dependency>
 
+```
+For TestNG:
+```xml
+<dependency>
+    <groupId>org.testng</groupId>
+    <artifactId>testng</artifactId>
+    <version>6.1.1</version>
+    <scope>test</scope>
+</dependency>
+```
 
-## Using the Java Helper Library
+###### 3. Java Helper Library
+The Java Helper Library handles reporting between your tests and Sauce Labs. It allows you to see useful information like the test name and pass/fail status in your Sauce Labs [Dashboard](https://saucelabs.com/beta/dashboard).
 
-The [Java helper library](https://github.com/saucelabs/sauce-java) provides additional test functionality when
-using Sauce (like pass/fail reporting), and it only requires minimal changes to the test class. There are
-JUnit and TestNG versions of the Java helper library. The version you are using is included as a dependency in the
-Maven pom file.
-
-The sample project from this tutorial already includes the dependency and a
-test that uses it. There is nothing new to add or run here: the rest of this
-page explains how to include the dependency in your own project and use it in
-your tests. However, you can see the effect of using these features on your
-[Sauce Labs tests page](https://saucelabs.com/tests). The tests for the
-`WebDriverWithHelperTest.java` test will have a name specified in the
-Session column and be marked as Pass in the Results column,
-whereas all other tests will simply be marked as Finished.
-
-### JUnit Helper Library
-
-To include the Java helper libraries in a JUnit project, add the following dependency to the pom.xml file (this was
-already created by Maven for this tutorial):
-
+For Junit:
 ```xml
 <dependency>
     <groupId>com.saucelabs</groupId>
@@ -292,171 +251,7 @@ already created by Maven for this tutorial):
 </dependency>
 ```
 
-In addition to the WebDriver.java class, Maven creates the `SampleSauceTest` class that demonstrates how
-to update tests to use the Java helper library. You can find this class in the 
-`src/test/java/com/yourcompany/SampleSauceTest.java` file shown below:
-
-
-```java
-@RunWith(ConcurrentParameterized.class)
-public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
-
-    /**
-     * Constructs a {@link SauceOnDemandAuthentication} instance using the supplied user name/access key.  To use the authentication
-     * supplied by environment variables or from an external file, use the no-arg {@link SauceOnDemandAuthentication} constructor.
-     */
-    public SauceOnDemandAuthentication authentication = new SauceOnDemandAuthentication("${userName}", "${accessKey}");
-
-    /**
-     * JUnit Rule which will mark the Sauce Job as passed/failed when the test succeeds or fails.
-     */
-    @Rule
-    public SauceOnDemandTestWatcher resultReportingTestWatcher = new SauceOnDemandTestWatcher(this, authentication);
-
-    /**
-     * Represents the browser to be used as part of the test run.
-     */
-    private String browser;
-    /**
-     * Represents the operating system to be used as part of the test run.
-     */
-    private String os;
-    /**
-     * Represents the version of the browser to be used as part of the test run.
-     */
-    private String version;
-    /**
-     * Instance variable which contains the Sauce Job Id.
-     */
-    private String sessionId;
-
-    /**
-     * The {@link WebDriver} instance which is used to perform browser interactions with.
-     */
-    private WebDriver driver;
-
-    /**
-     * Constructs a new instance of the test.  The constructor requires three string parameters, which represent the operating
-     * system, version and browser to be used when launching a Sauce VM.  The order of the parameters should be the same
-     * as that of the elements within the {@link #browsersStrings()} method.
-     * @param os
-     * @param version
-     * @param browser
-     */
-    public SampleSauceTest(String os, String version, String browser) {
-        super();
-        this.os = os;
-        this.version = version;
-        this.browser = browser;
-    }
-
-    /**
-     * @return a LinkedList containing String arrays representing the browser combinations the test should be run against. The values
-     * in the String array are used as part of the invocation of the test constructor
-     */
-    @ConcurrentParameterized.Parameters
-    public static LinkedList browsersStrings() {
-        LinkedList browsers = new LinkedList();
-        browsers.add(new String[]{"Windows 8.1", "11", "internet explorer"});
-        browsers.add(new String[]{"OSX 10.8", "6", "safari"});
-        return browsers;
-    }
-
-
-    /**
-     * Constructs a new {@link RemoteWebDriver} instance which is configured to use the capabilities defined by the {@link #browser},
-     * {@link #version} and {@link #os} instance variables, and which is configured to run against ondemand.saucelabs.com, using
-     * the username and access key populated by the {@link #authentication} instance.
-     *
-     * @throws Exception if an error occurs during the creation of the {@link RemoteWebDriver} instance.
-     */
-    @Before
-    public void setUp() throws Exception {
-
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-        capabilities.setCapability(CapabilityType.BROWSER_NAME, browser);
-        if (version != null) {
-            capabilities.setCapability(CapabilityType.VERSION, version);
-        }
-        capabilities.setCapability(CapabilityType.PLATFORM, os);
-        capabilities.setCapability("name", "Sauce Sample Test");
-        this.driver = new RemoteWebDriver(
-                new URL("http://" + authentication.getUsername() + ":" + authentication.getAccessKey() + "@ondemand.saucelabs.com:80/wd/hub"),
-                capabilities);
-        this.sessionId = (((RemoteWebDriver) driver).getSessionId()).toString();
-
-    }
-
-    /**
-     * Runs a simple test verifying the title of the amazon.com homepage.
-     * @throws Exception
-     */
-    @Test
-    public void amazon() throws Exception {
-        driver.get("http://www.amazon.com/");
-        assertEquals("Amazon.com: Online Shopping for Electronics, Apparel, Computers, Books, DVDs & more", driver.getTitle());
-    }
-
-    /**
-     * Closes the {@link WebDriver} session.
-     *
-     * @throws Exception
-     */
-    @After
-    public void tearDown() throws Exception {
-        driver.quit();
-    }
-
-    /**
-     *
-     * @return the value of the Sauce Job id.
-     */
-    @Override
-    public String getSessionId() {
-        return sessionId;
-    }
-}
-
-```
-
-The `SampleSauceTest` class is fundamentally the same as the WebDriverTest class, with a couple of additions.
-First it implements the Sauce `SauceOnDemandSessionIdProvider` interface, which requires that a `getSessionId()` method 
-be implemented:
-
-
-```java
-public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
-```
-
-Pass your Sauce user name and Sauce access key as parameters to the `SauceOnDemandAuthentication` constructor. (You can find your 
-Sauce access key on your [Sauce account page](https://saucelabs.com/account).) The 
-object that is returned is passed as a parameter to the `SauceOnDemandTestWatcher` constructor. `SauceOnDemandTestWatcher` 
-notifies Sauce if the test passed or failed.
-
-```java
-public SauceOnDemandAuthentication authentication = new SauceOnDemandAuthentication("sauceUsername", "sauceAccessKey");
-
-public @Rule
-SauceOnDemandTestWatcher resultReportingTestWatcher = new SauceOnDemandTestWatcher(this, authentication);
-
-```
-
-The SauceOnDemandTestWatcher instance invokes the [Sauce REST API](http://saucelabs.com/docs/rest). This is how JUnit
-notifies the Sauce environment if the test passed or failed. It also outputs the Sauce session id 
-to stdout so the Sauce plugins for [Jenkins](https://wiki.jenkins-ci.org/display/JENKINS/Sauce+OnDemand+Plugin) 
-and [Bamboo](https://marketplace.atlassian.com/plugins/com.saucelabs.bamboo.bamboo-sauceondemand-plugin) 
-can parse the session id.
-
-Finally, notice the `testName` rule, which is used when building the
-`DesiredCapabilities`. This lets you specify a name for the test which
-will be included in reports on the Sauce Labs site so you can quickly
-identify which tests are failing.
-
-### TestNG Helper Library
-
-To include the Java helper libraries in a TestNG project, add the following dependency to the pom.xml file (this 
-was automatically created by Maven for this tutorial):
-
+For TestNG:
 ```xml
 <dependency>
     <groupId>com.saucelabs</groupId>
@@ -466,805 +261,105 @@ was automatically created by Maven for this tutorial):
 </dependency>
 ```
 
-As with the JUnit example, the TestNG Maven archetype creates a `SampleSauceTest` class that demonstrates
-how to update tests to use the Java helper library.  This class is located in the 
-`src/test/java/com/yourcompany/SampleSauceTest.java` file shown below:
+#### Parallelizing Junit
+The Java helper library includes a Parallelized class that creates a dynamic thread pool that holds each thread that is running a test.
 
-```java
-@Listeners({SauceOnDemandTestListener.class})
-public class SampleSauceTest implements SauceOnDemandSessionIdProvider, SauceOnDemandAuthenticationProvider {
+###### 1. Parallelizing the WebDriverTest Class
 
-    /**
-     * Constructs a {@link com.saucelabs.common.SauceOnDemandAuthentication} instance using the supplied user name/access key.  To use the authentication
-     * supplied by environment variables or from an external file, use the no-arg {@link com.saucelabs.common.SauceOnDemandAuthentication} constructor.
-     */
-    public SauceOnDemandAuthentication authentication = new SauceOnDemandAuthentication("${userName}", "${accessKey}");
+As mentioned previously, the SampleSauceTest class demonstrates how to run its tests in parallel. The test is parallelized by specifying the different parameters to test with, in this case the browser and platform. Behind the scenes, the test framework creates a different instance of the test class for each set of parameters and runs them in parallel. The parameters are passed to the constructor so each instance customizes its behavior using those parameters.
 
-    /**
-     * ThreadLocal variable which contains the  {@link WebDriver} instance which is used to perform browser interactions with.
-     */
-    private ThreadLocal<WebDriver> webDriver = new ThreadLocal<WebDriver>();
+In this example, we're parallelizing tests across different browsers on different platforms. Since testing an app in Firefox on Linux is independent of testing it in Chrome on Windows, we can safely run both tests in parallel. The static method browsersStrings() is annotated with com.saucelabs.junit.ConcurrentParameterized.Parameters, indicating it should be used to determine the parameters for each instance of the test. The method returns a LinkedList of parameters to use for each test instance's constructor. The SampleSauceTest constructor captures these parameters and setUp() uses them to configure the DesiredCapabilities.
 
-    /**
-     * ThreadLocal variable which contains the Sauce Job Id.
-     */
-    private ThreadLocal<String> sessionId = new ThreadLocal<String>();
+For a full example, see: https://github.com/ndmanvar/SeleniumJavaJunit/blob/master/src/test/java/com/yourcompany/SampleSauceTest.java
 
-    /**
-     * DataProvider that explicitly sets the browser combinations to be used.
-     *
-     * @param testMethod
-     * @return
-     */
-    @DataProvider(name = "hardCodedBrowsers", parallel = true)
-    public static Object[][] sauceBrowserDataProvider(Method testMethod) {
-        return new Object[][]{
-                new Object[]{"internet explorer", "11", "Windows 8.1"},
-                new Object[]{"safari", "6", "OSX 10.8"},
-        };
-    }
-
-    /**
-     *
-     * Constructs a new {@link RemoteWebDriver} instance which is configured to use the capabilities defined by the browser,
-     * version and os parameters, and which is configured to run against ondemand.saucelabs.com, using
-     * the username and access key populated by the {@link #authentication} instance.
-     *
-     * @param browser Represents the browser to be used as part of the test run.
-     * @param version Represents the version of the browser to be used as part of the test run.
-     * @param os Represents the operating system to be used as part of the test run.
-     * @return
-     * @throws MalformedURLException if an error occurs parsing the url
-     */
-    private WebDriver createDriver(String browser, String version, String os) throws MalformedURLException {
-
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-        capabilities.setCapability(CapabilityType.BROWSER_NAME, browser);
-        if (version != null) {
-            capabilities.setCapability(CapabilityType.VERSION, version);
-        }
-        capabilities.setCapability(CapabilityType.PLATFORM, os);
-        capabilities.setCapability("name", "Sauce Sample Test");
-        webDriver.set(new RemoteWebDriver(
-                new URL("http://" + authentication.getUsername() + ":" + authentication.getAccessKey() + "@ondemand.saucelabs.com:80/wd/hub"),
-                capabilities));
-        sessionId.set(((RemoteWebDriver) getWebDriver()).getSessionId().toString());
-        return webDriver.get();
-    }
-
-    /**
-     * Runs a simple test verifying the title of the amazon.com homepage.
-     *
-     * @param browser Represents the browser to be used as part of the test run.
-     * @param version Represents the version of the browser to be used as part of the test run.
-     * @param os Represents the operating system to be used as part of the test run.
-     * @throws Exception if an error occurs during the running of the test
-     */
-    @Test(dataProvider = "hardCodedBrowsers")
-    public void webDriver(String browser, String version, String os) throws Exception {
-        WebDriver driver = createDriver(browser, version, os);
-        driver.get("http://www.amazon.com/");
-        assertEquals(driver.getTitle(), "Amazon.com: Online Shopping for Electronics, Apparel, Computers, Books, DVDs & more");
-        driver.quit();
-    }
-
-    /**
-     * @return the {@link WebDriver} for the current thread
-     */
-    public WebDriver getWebDriver() {
-        System.out.println("WebDriver" + webDriver.get());
-        return webDriver.get();
-    }
-
-    /**
-     *
-     * @return the Sauce Job id for the current thread
-     */
-    public String getSessionId() {
-        return sessionId.get();
-    }
-
-    /**
-     *
-     * @return the {@link SauceOnDemandAuthentication} instance containing the Sauce username/access key
-     */
-    @Override
-    public SauceOnDemandAuthentication getAuthentication() {
-        return authentication;
-    }
-}
-```
-
-This SampleSauceTest class is fundamentally the same as the WebDriverTest class, with a couple of additions. It
-is annotated with the TestNG annotation `@Listeners`, which includes the 
-`SauceOnDemandTestListener` class. The SauceOnDemandTestListener class invokes 
-the [Sauce REST API](http://saucelabs.com/docs/rest), which notifies Sauce if the test passed or failed. 
-It also outputs the Sauce session id to stdout so the Sauce plugins 
-for [Jenkins](https://wiki.jenkins-ci.org/display/JENKINS/Sauce+OnDemand+Plugin) 
-and [Bamboo](https://marketplace.atlassian.com/plugins/com.saucelabs.bamboo.bamboo-sauceondemand-plugin) 
-can parse the session id.
-
-The SampleSauceTest also demonstrates how Selenium tests can be run in parallel, which we'll discuss a bit later.
-
-## Running Tests Against Web Applications
-
-Testing a static sandbox is one thing. Testing a real application's functionality
-is another. In this tutorial we'll run Selenium tests against a real
-live app to test signup, login and logout
-behaviours. When you have finished this tutorial, you'll have a good
-idea how to write Selenium tests for basic, multi-page interactions
-with a web app.
-
-
-The Test App
----
-
-Normally, you would test your own web app. For the purposes of this
-tutorial, we provide a [demo app at
-`tutorialapp.saucelabs.com`](http://tutorialapp.saucelabs.com) that
-we can run
-Selenium scripts against. It is an "idea competition" app called
-[Shootout](https://github.com/Pylons/shootout) where users vote for ideas designed for the Pyramid Python
-web framework. We won't test voting functionality in this demo, but feel free to play around with it.
-
-
-## The Test Class
-
-
-The sample project in your `sauce-project` directory includes a test
-for this app, reproduced below. Since you have already run all the
-tests for the project, you have already run these 8 tests. You can
-view them in your [Sauce Labs tests
-page](https://saucelabs.com/tests).
-
-The key idea of Selenium tests is to specify input to the browser and
-make sure the app's response is what we want. In this case, we use
-Selenium to set form input values, such as username and password, and
-then click the submission button and check the output.
-
-The goal of this particular test is to verify login, logout, and registration
-functionality. To do so, we first build a few utilities to make
-testing each of these processes simple. Then, we use these to write
-short tests of both successful and unsuccessful attempts at these
-operations. Recall that the test code is all standard Selenium
-functionality -- we have only had to request that the Selenium code
-execute on browsers hosted by Sauce Labs.
-
-
-
-```java
-public class WebDriverDemoShootoutTest {
-
-    private SauceOnDemandAuthentication authentication = new SauceOnDemandAuthentication("sauceUsername", "sauceAccessKey");
-
-    private WebDriver driver;
-
-    @Before
-    public void setUp() throws Exception {
-        DesiredCapabilities capabilities = DesiredCapabilities.firefox();
-        capabilities.setCapability("version", "17");
-        capabilities.setCapability("platform", Platform.XP);
-        this.driver = new RemoteWebDriver(
-                new URL("http://" + authentication.getUsername() + ":" + authentication.getAccessKey() + "@ondemand.saucelabs.com:80/wd/hub"),
-                capabilities);
-        driver.get("http://tutorialapp.saucelabs.com");
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        driver.quit();
-    }
-
-    @Test
-    public void testLoginFailsWithBadCredentials() throws Exception {
-        String userName = getUniqueId();
-        String password = getUniqueId();
-        driver.findElement(By.name("login")).sendKeys(userName);
-        driver.findElement(By.name("password")).sendKeys(password);
-        driver.findElement(By.cssSelector("input.login")).click();
-        assertNotNull("Text not found", driver.findElement(By.id("message")));
-    }
-
-    @Test
-    public void testLogout() throws Exception {
-        Map<String, String> userDetails = createRandomUser();
-        doRegister(userDetails, true);
-    }
-
-    @Test
-    public void testLogin() throws Exception {
-        Map<String, String> userDetails = createRandomUser();
-        doRegister(userDetails, true);
-        doLogin(userDetails.get("username"), userDetails.get("password"));
-    }
-
-    @Test
-    public void testRegister() throws Exception {
-        Map<String, String> userDetails = createRandomUser();
-        doRegister(userDetails, false);
-        assertTrue("Message not found", driver.findElement(By.cssSelector(".username")).getText().contains("You are logged in as "));
-    }
-
-    @Test
-    public void testRegisterFailsWithoutUsername() throws Exception {
-        Map<String, String> userDetails = createRandomUser();
-        userDetails.put("username", "");
-        doRegister(userDetails, false);
-        assertEquals("Message not found", "Please enter a value", driver.findElement(By.cssSelector(".error")).getText());
-
-    }
-
-    @Test
-    public void testRegisterFailsWithoutName() throws Exception {
-        Map<String, String> userDetails = createRandomUser();
-        userDetails.put("name", "");
-        doRegister(userDetails, false);
-        assertEquals("Message not found", "Please enter a value", driver.findElement(By.cssSelector(".error")).getText());
-    }
-
-    @Test
-    public void testRegisterFailsWithMismatchedPasswords() throws Exception {
-        Map<String, String> userDetails = createRandomUser();
-        userDetails.put("confirm_password", getUniqueId());
-        doRegister(userDetails, false);
-        assertEquals("Message not found", "Fields do not match", driver.findElement(By.cssSelector(".error")).getText());
-    }
-
-    @Test
-    public void testRegisterFailsWithBadEmail() throws Exception {
-        Map<String, String> userDetails = createRandomUser();
-        userDetails.put("email", "test");
-        doRegister(userDetails, false);
-        assertEquals("Message not found", "An email address must contain a single @", driver.findElement(By.cssSelector(".error")).getText());
-        driver.findElement(By.id("email")).clear();
-        driver.findElement(By.id("email")).sendKeys("@example.com");
-        driver.findElement(By.id("form.submitted")).click();
-        assertEquals("Message not found", "The username portion of the email address is invalid (the portion before the @: )", driver.findElement(By.cssSelector(".error")).getText());
-        driver.findElement(By.id("email")).clear();
-        driver.findElement(By.id("email")).sendKeys("test@example");
-        driver.findElement(By.id("form.submitted")).click();
-        assertEquals("Message not found", "The domain portion of the email address is invalid (the portion after the @: bob)", driver.findElement(By.cssSelector(".error")).getText());
-    }
-
-    private String getUniqueId() {
-        return Long.toHexString(Double.doubleToLongBits(Math.random()));
-    }
-
-    private void doRegister(Map<String, String> userDetails, boolean logout) {
-        userDetails.put("confirm_password", userDetails.get("confirm_password") != null ?
-                userDetails.get("confirm_password") : userDetails.get("password"));
-        driver.get("http://tutorialapp.saucelabs.com/register");
-        driver.findElement(By.id("username")).sendKeys(userDetails.get("username"));
-        driver.findElement(By.id("password")).sendKeys(userDetails.get("password"));
-        driver.findElement(By.id("confirm_password")).sendKeys(userDetails.get("confirm_password"));
-        driver.findElement(By.id("name")).sendKeys(userDetails.get("name"));
-        driver.findElement(By.id("email")).sendKeys(userDetails.get("email"));
-        driver.findElement(By.id("form.submitted")).click();
-
-        if (logout) {
-            doLogout();
-        }
-    }
-
-    private void doLogout() {
-        driver.get("http://tutorialapp.saucelabs.com/logout");
-        assertEquals("Message not found", "Logged out successfully.", driver.findElement(By.id("message")).getText());
-    }
-
-    private Map<String, String> createRandomUser() {
-        Map<String, String> userDetails = new HashMap<String, String>();
-        String fakeId = getUniqueId();
-        userDetails.put("username", fakeId);
-        userDetails.put("password", "testpass");
-        userDetails.put("name", "Fake " + fakeId);
-        userDetails.put("email", fakeId + "@example.com");
-        return userDetails;
-    }
-
-    private void doLogin(String username, String password) {
-        driver.findElement(By.name("login")).sendKeys(username);
-        driver.findElement(By.name("password")).sendKeys(password);
-        driver.findElement(By.cssSelector("input.login")).click();
-        assertEquals("Message not found", "Logged in successfully.", driver.findElement(By.id("message")).getText());
-    }
-
-}
-```
-
-Let's start with the utilities.
-The `createRandomUser()` function generates unique random user details for the registration
-and login tests. The randomness is important because it allows our tests to
-run in parallel as many times as we want without fear of collisions.
-
-```java
-private Map<String, String> createRandomUser() {
-    Map<String, String> userDetails = new HashMap<String, String>();
-    String fakeId = getUniqueId();
-    userDetails.put("username", fakeId);
-    userDetails.put("password", "testpass");
-    userDetails.put("name", "Fake " + fakeId);
-    userDetails.put("email", fakeId + "@example.com");
-    return userDetails;
-}
-```
-
-The `doRegister()`, `doLogin()` and `doLogout()` issue requests that
-register, login, and logout the user, respectively. Recall that the
-tests, Selenium web browser client, and web app are all running on
-separate servers communicating over the internet. We use Selenium to
-manipulate the browser state (e.g. fill in forms) and submit requests
-(e.g. click the submit button) in order to put the user into these
-states.
-
-```java
-private void doRegister(Map<String, String> userDetails, boolean logout) {
-       userDetails.put("confirm_password", userDetails.get("confirm_password") != null ?
-               userDetails.get("confirm_password") : userDetails.get("password"));
-       driver.get("http://tutorialapp.saucelabs.com/register");
-       driver.findElement(By.id("username")).sendKeys(userDetails.get("username"));
-       driver.findElement(By.id("password")).sendKeys(userDetails.get("password"));
-       driver.findElement(By.id("confirm_password")).sendKeys(userDetails.get("confirm_password"));
-       driver.findElement(By.id("name")).sendKeys(userDetails.get("name"));
-       driver.findElement(By.id("email")).sendKeys(userDetails.get("email"));
-       driver.findElement(By.id("form.submitted")).click();
-
-       if (logout) {
-           doLogout();
-       }
-   }
-
-   private void doLogout() {
-       driver.get("http://tutorialapp.saucelabs.com/logout");
-       assertEquals("Message not found", "Logged out successfully.", driver.findElement(By.id("message")).getText());
-   }
-
-   private void doLogin(String username, String password) {
-      driver.findElement(By.name("login")).sendKeys(username);
-      driver.findElement(By.name("password")).sendKeys(password);
-      driver.findElement(By.cssSelector("input.login")).click();
-      assertEquals("Message not found", "Logged in successfully.", driver.findElement(By.id("message")).getText());
-}
-```
-
-In our first test, we check that logging in doesn't work with a bad
-username/password. Instead of using the `doLogin()` utility, which
-checks for successful login, we use a similar process but check that
-an error message is returned.
-
-```java
-@Test
-public void testLoginFailsWithBadCredentials() throws Exception {
-    String userName = getUniqueId();
-    String password = getUniqueId();
-    driver.findElement(By.name("login")).sendKeys(userName);
-    driver.findElement(By.name("password")).sendKeys(password);
-    driver.findElement(By.cssSelector("input.login")).click();
-    assertNotNull("Text not found", driver.findElement(By.id("message")));
-}
-```
-
-Next we test normal login and logout functionality using the
-`doLogin()` and `doLogout()` methods. The first test creates a new user
-and uses the `doLogout()` helper method to assert that the logout message
-appears. The second test creates a random user, logs it out, and then uses
-the `doLogin()` helper method to assert that the successful login message
-appears.
-
-```java
-@Test
-public void testLogin() throws Exception {
-    Map<String, String> userDetails = createRandomUser();
-    doRegister(userDetails, true);
-    doLogin(userDetails.get("username"), userDetails.get("password"));
-}
-
-@Test
-public void testLogout() throws Exception {
-    Map<String, String> userDetails = createRandomUser();
-    doRegister(userDetails, true);
-}
-```
-
-Then we test Shootout's signup functionality by using the
-registration helper function to create a new user and assert that the
-user is logged in (which happens after a successful registration).
-
-```java
-@Test
-public void testRegister() throws Exception {
-    Map<String, String> userDetails = createRandomUser();
-    doRegister(userDetails, false);
-    assertTrue("Message not found", driver.findElement(By.cssSelector(".username")).getText().contains("You are logged in as "));
-}
-```
-
-And finally we have a set of tests for validation logic in the signup form. First we test that each of the required
-fields results in an error on signup if the field is empty. Next we test if a mismatched password and password
-confirmation generate the desired error, and then we test to make sure that the app doesn't allow a successful
-registration if various incorrect email formats are used.
-
-```java
-@Test
-public void testRegisterFailsWithoutUsername() throws Exception {
-    Map<String, String> userDetails = createRandomUser();
-    userDetails.put("username", "");
-    doRegister(userDetails, false);
-    assertEquals("Message not found", "Please enter a value", driver.findElement(By.cssSelector(".error")).getText());
-
-}
-
-@Test
-public void testRegisterFailsWithoutName() throws Exception {
-    Map<String, String> userDetails = createRandomUser();
-    userDetails.put("name", "");
-    doRegister(userDetails, false);
-    assertEquals("Message not found", "Please enter a value", driver.findElement(By.cssSelector(".error")).getText());
-}
-
-@Test
-public void testRegisterFailsWithMismatchedPasswords() throws Exception {
-    Map<String, String> userDetails = createRandomUser();
-    userDetails.put("confirm_password", getUniqueId());
-    doRegister(userDetails, false);
-    assertEquals("Message not found", "Fields do not match", driver.findElement(By.cssSelector(".error")).getText());
-}
-
-@Test
-public void testRegisterFailsWithBadEmail() throws Exception {
-    Map<String, String> userDetails = createRandomUser();
-    userDetails.put("email", "test");
-    doRegister(userDetails, false);
-    assertEquals("Message not found", "An email address must contain a single @", driver.findElement(By.cssSelector(".error")).getText());
-    driver.findElement(By.id("email")).clear();
-    driver.findElement(By.id("email")).sendKeys("@example.com");
-    driver.findElement(By.id("form.submitted")).click();
-    assertEquals("Message not found", "The username portion of the email address is invalid (the portion before the @: )", driver.findElement(By.cssSelector(".error")).getText());
-    driver.findElement(By.id("email")).clear();
-    driver.findElement(By.id("email")).sendKeys("test@example");
-    driver.findElement(By.id("form.submitted")).click();
-    assertEquals("Message not found", "The domain portion of the email address is invalid (the portion after the @: bob)", driver.findElement(By.cssSelector(".error")).getText());
-}
-```
-
-## Next Steps for Testing
-
-
-As simple as they are, these signup/login/logout tests are extremely
-valuable. Running them before every deployment helps to ensure that
-you can welcome new users into your community and get them where they
-need to go.
-
-If you are new to Selenium, try adding a new test to this suite. For
-example, reuse the registration and login methods to setup a user and
-test the voting functionality. To do so, you will need to try the
-voting functionality for yourself to understand how it *should*
-function. You could test that a logged in user sees voting buttons,
-can click them, and that the next page shows the adjusted scores.
-
-When you are comfortable with writing these types of tests, you can
-move on to learn more about how Sauce Labs lets you do more with
-Selenium.
-
-
-## Running Tests in Parallel
-
-
-As you may recall from earlier tutorials, Selenium tests can take a long time! They may take even longer on Sauce
-because we start each test on a new virtual machine that has never been used before (don't worry, we don't charge
-you for the spin-up time).
-
-To make tests run faster, run more than one test at a time. As long as
-the tests are independent --- whether you're running the same test
-across different browsers or the tests just don't interact with each
-other --- there should be no problem running them
-simultaneously. Since we have thousands of
-clean virtual machines on standby, we encourage you to run as many tests
-as you can at once. For an overview of how many tests you can run in parallel, see the parallelization section of the
-[Sauce plan page](http://saucelabs.com/pricing).
-
-Keep in mind, Sauce Labs accounts have limits on the number of parallel tests they can run at once.  Try to start too many, and you'll end up with tests timing out.  You can find the number of parallel tests your account can run in the sidebar of your [account page](http://www.saucelabs.com/account).
-
-### Parallel Tests in JUnit
-
-
-Tests can be run in parallel using JUnit, but it takes a bit of work.
-The [Java helper library](https://github.com/saucelabs/sauce-java) includes a `Parallelized`
-class that creates a dynamic thread pool that holds each thread that is running a test.
-
-**Parallelizing the WebDriverTest Class**
-
-As mentioned previously, the `SampleSauceTest` class demonstrates how to run it's tests in parallel. The test is
-parallelized by specifying the different parameters to test with, in this
-case the browser and platform. Behind the scenes, the test framework
-creates a different instance of the test class for each set of parameters
-and runs them in parallel. The parameters are passed to the
-constructor so each instance customizes it's behavior using those
-parameters.
-
-In this example, we're parallelizing tests across different browsers
-on different platforms. Since testing an app in Firefox on Linux is
-independent of testing it in Chrome on Windows, we can safely run both
-tests in parallel. The static method `browsersStrings()` is
-annotated with `com.saucelabs.junit.ConcurrentParameterized.Parameters`,
-indicating it should be used to determine the parameters for each
-instance of the test. The method returns a `LinkedList` of parameters
-to use for each test instance's constructor. The
-`SampleSauceTest` constructor captures these
-parameters and `setUp()` uses them to configure the `DesiredCapabilities`.
-
-
-```java
-@RunWith(ConcurrentParameterized.class)
-public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
-
-    /**
-     * Constructs a {@link SauceOnDemandAuthentication} instance using the supplied user name/access key.  To use the authentication
-     * supplied by environment variables or from an external file, use the no-arg {@link SauceOnDemandAuthentication} constructor.
-     */
-    public SauceOnDemandAuthentication authentication = new SauceOnDemandAuthentication("${userName}", "${accessKey}");
-
-    /**
-     * JUnit Rule which will mark the Sauce Job as passed/failed when the test succeeds or fails.
-     */
-    @Rule
-    public SauceOnDemandTestWatcher resultReportingTestWatcher = new SauceOnDemandTestWatcher(this, authentication);
-
-    /**
-     * Represents the browser to be used as part of the test run.
-     */
-    private String browser;
-    /**
-     * Represents the operating system to be used as part of the test run.
-     */
-    private String os;
-    /**
-     * Represents the version of the browser to be used as part of the test run.
-     */
-    private String version;
-    /**
-     * Instance variable which contains the Sauce Job Id.
-     */
-    private String sessionId;
-
-    /**
-     * The {@link WebDriver} instance which is used to perform browser interactions with.
-     */
-    private WebDriver driver;
-
-    /**
-     * Constructs a new instance of the test.  The constructor requires three string parameters, which represent the operating
-     * system, version and browser to be used when launching a Sauce VM.  The order of the parameters should be the same
-     * as that of the elements within the {@link #browsersStrings()} method.
-     * @param os
-     * @param version
-     * @param browser
-     */
-    public SampleSauceTest(String os, String version, String browser) {
-        super();
-        this.os = os;
-        this.version = version;
-        this.browser = browser;
-    }
-
-    /**
-     * @return a LinkedList containing String arrays representing the browser combinations the test should be run against. The values
-     * in the String array are used as part of the invocation of the test constructor
-     */
-    @ConcurrentParameterized.Parameters
-    public static LinkedList browsersStrings() {
-        LinkedList browsers = new LinkedList();
-        browsers.add(new String[]{"Windows 8.1", "11", "internet explorer"});
-        browsers.add(new String[]{"OSX 10.8", "6", "safari"});
-        return browsers;
-    }
-
-
-    /**
-     * Constructs a new {@link RemoteWebDriver} instance which is configured to use the capabilities defined by the {@link #browser},
-     * {@link #version} and {@link #os} instance variables, and which is configured to run against ondemand.saucelabs.com, using
-     * the username and access key populated by the {@link #authentication} instance.
-     *
-     * @throws Exception if an error occurs during the creation of the {@link RemoteWebDriver} instance.
-     */
-    @Before
-    public void setUp() throws Exception {
-
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-        capabilities.setCapability(CapabilityType.BROWSER_NAME, browser);
-        if (version != null) {
-            capabilities.setCapability(CapabilityType.VERSION, version);
-        }
-        capabilities.setCapability(CapabilityType.PLATFORM, os);
-        capabilities.setCapability("name", "Sauce Sample Test");
-        this.driver = new RemoteWebDriver(
-                new URL("http://" + authentication.getUsername() + ":" + authentication.getAccessKey() + "@ondemand.saucelabs.com:80/wd/hub"),
-                capabilities);
-        this.sessionId = (((RemoteWebDriver) driver).getSessionId()).toString();
-
-    }
-
-    /**
-     * Runs a simple test verifying the title of the amazon.com homepage.
-     * @throws Exception
-     */
-    @Test
-    public void amazon() throws Exception {
-        driver.get("http://www.amazon.com/");
-        assertEquals("Amazon.com: Online Shopping for Electronics, Apparel, Computers, Books, DVDs & more", driver.getTitle());
-    }
-
-    /**
-     * Closes the {@link WebDriver} session.
-     *
-     * @throws Exception
-     */
-    @After
-    public void tearDown() throws Exception {
-        driver.quit();
-    }
-
-    /**
-     *
-     * @return the value of the Sauce Job id.
-     */
-    @Override
-    public String getSessionId() {
-        return sessionId;
-    }
-}
-```
-
-When you run the tests, you should see these tests running in
-parallel on the [Sauce Labs tests page](https://saucelabs.com/tests).
-
-### Setting a parallelism limit
+###### 2. Setting a Parallelism Limit
 
 To stop tests from timing out when you're already using all your Sauce Labs parallel slots, we need to limit the number of threads.
 
-The Sauce Labs Parallelized JUnit runner we used above uses the `junit.parallel.threads` System property to control how many threads it runs.  Let's set this to 2, to match the limit for free accounts:
-
-```bash
-mvn test -Djunit.parallel.threads=2
-```
-
-### Parallel Tests in TestNG
-
-
-TestNG has built in support for running tests in parallel that is configured by the following line in the
-`src\test\resources\xml\testng.xml` file:
+The Sauce Labs Parallelized JUnit runner we used above uses the junit.parallel.threads System property to control how many threads it runs. Simply update your pom.xml like so:
 
 ```xml
-<suite name="ParallelTests" verbose="5" parallel="methods" thread-count="10">
+ <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.0</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12.4</version>
+                <configuration>
+                    <parallel>classes</parallel>
+                    <threadCount>20</threadCount>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                </configuration>
+            </plugin>
+        </plugins>
+</build>
+
+```
+#### Parallelizing TestNG
+TestNG has built in support for running tests in parallel. All you need to do is set a parallelism limit in your pom.xml like so: 
+
+```xml
+<build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.0</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12.4</version>
+                <configuration>
+                    <parallel>classes</parallel>
+                    <threadCount>20</threadCount>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                </configuration>
+            </plugin>
+        </plugins>
+</build>
+
 ```
 
-Don't forget to match the `thread-count` to your concurrency limit, as mentioned above.
+Don't forget to match your thread count to your concurrency limit. 
 
-For more information about the options available for running parallel tests using TestNG, see the
-[TestNG website](http://testng.org/doc/documentation-main.html#parallel-running)
+##Reporting to the Sauce Labs Dashboard
+Follow these best practices to enhance your user experience while using Sauce Labs with Java:
 
-Next Steps
----
+###### 1. Reporting Test Results
+If you have installed the Java Helper Library for your chosen framework, then your test information (like test name and pass/fail status) will automatically show up in your Sauce [Dashboard](https://saucelabs.com/beta/dashboard). 
 
-Parallelizing tests will make them run significantly faster. It is
-only a little bit of work to parallelize them and it lets you test
-your code for deployment much more quickly. Use parallelization to run
-the same test across many browsers and platforms at once, or just to
-run many tests that are independent simultaneously.
+Here are instructions for [installing the Java Helper Library for TestNG and Junit](https://github.com/jsmoxon/JavaDocs#3-java-helper-library).
 
-You're almost done! We have covered all the major functionality. Now,
-we'll give you a few tips about how to get the best performance out of
-Selenium and Sauce Labs.
+###### 2. Tagging Tests
 
-## Tips for Better Selenium Test Performance
+Sauce Labs allows you to “tag” your tests with different labels and variables like build ID, name, or custom. Sauce uses DesiredCapabilities to do this.
 
-This section discusses some ideas for improving the performance of Selenium tests.
-
-## Avoid Test Dependencies
-
-
-Dependencies between tests prevent tests from being able to run in parallel. And running tests in parallel is by far
-the best way to speed up the execution of your entire test suite. It's much easier to add a virtual machine than to 
-try to figure out how to squeeze out another second of performance from a single test.
-
-What are dependencies? Imagine if we had a test suite with these two tests:
+You can use assign build number/tag(s) to search or identify the test result with a particular build number or tag(s) once your test is complete. You can define the build number/tag(s) while defining the DesiredCapabilities as shown in the sample below:
 
 ```java
-@Test
-public void testLogin()
-{
-    // do some stuff to trigger a login
-    assertEquals("My Logged In Page", driver.getTitle());
-}
-
-@Test
-public void testUserOnlyFunctionality()
-{
-    driver.findElement(By.id("userOnlyButton")).click();
-    assertEquals("Result of clicking userOnlyButton", driver.findElement(By.id("some_result")));
-}
+        DesiredCapabilities caps = DesiredCapabilities.firefox();
+        caps.setCapability("platform", "Windows XP");
+        caps.setCapability("version", "37.0");
+        caps.setCapability("name", "Web Driver demo Test");
+        caps.setCapability("tags", "Tag1");
+        caps.setCapability("build", "v1.0");
+        WebDriver driver = new RemoteWebDriver(
+                new URL("http://YOUR_USERNAME:YOUR_ACCESS_KEY@ondemand.saucelabs.com:80/wd/hub"),
+                caps);
 ```
 
-The `testLogin()` method in the first function's pseudocode triggers the browser to log in 
-and asserts that the login was successful. The second test clicks a button on the
-logged-in page and asserts that a certain result occurred.
+Assigning build numbers in your tests allows you to group your tests on the Sauce Labs [Dashboard](https://saucelabs.com/beta/dashboard) by builds.
 
-This test class works fine as long as the tests run in order. But the
-assumption the second test makes (that we are already logged in) creates a 
-dependency on the first test. If these tests run at the same time, or if the
-second one runs before the first test, the browser's cookies will
-not allow Selenium to access the logged-in page and the second test fails.
-
-The right way to remove these dependencies is to make sure that each test can 
-run completely independently of the other. Let's fix the example above so
-there are no dependencies:
-
-
-```java
-private void doLogin()
-{
-    // do some stuff to trigger a login
-    assertEquals("My Logged In Page", driver.getTitle());
-}
-
-@Test
-public void testLogin()
-{
-    doLogin();
-}
-
-@Test
-public void testUserOnlyFunctionality()
-{
-    doLogin();
-    driver.findElement(By.id("userOnlyButton")).click();
-    assertEquals("Result of clicking userOnlyButton", driver.findElement(By.id("some_result")));
-}
-```
-
-The main point is that it's dangerous to assume any state whatsoever when
-developing tests for your app. Instead, find ways to quickly generate
-desired states for individual tests the way we did in the `doLogin()` method above
--- it generates a logged-in state instead of assuming it. 
-
-You might even want to develop an API for the development and test versions of your app
-that provides URL shortcuts that generate common states. For example, 
-a URL that's only available in test that creates a random user account and 
-logs it in automatically.
-
-## Don't Use Brittle Locators
-
-WebDriver provides a number of 
-[locator strategies](http://code.google.com/p/selenium/wiki/JsonWireProtocol#/session/:sessionId/element) for accessing 
-elements on a webpage. 
-
-It's tempting to use complex XPath expressions like `//body/div/div/*[@class="someClass"]`
-or CSS selectors like `#content .wrapper .main`. While these might work when 
-you are developing your tests, they will almost certainly break when you make 
-unrelated refactoring changes to your HTML output.
-
-Instead, use sensible semantics for CSS IDs and form element names and try to 
-restrict yourself to using `By.id()` or `By.name()`. This makes it 
-much less likely that you'll inadvertently break your page by shuffling some 
-lines of code around.
-
-## Use WebDriverWait
-
-Selenium doesn't know when it's supposed to wait 
-before executing the next command. When users click a submit button, 
-they know not to try another action until the next page 
-loads. Selenium, however, immediately executes the next command. If 
-the next command is part of an assertion in your code the assertion may 
-fail, even though if Selenium had waited a little bit longer the assertion would have succeeded.
-
-The solution is to use 
-[WebDriverWait](http://selenium.googlecode.com/svn/trunk/docs/api/java/org/openqa/selenium/support/ui/WebDriverWait.html), 
-which in conjunction with an ExpectedConditions instance 
-will wait until the expected condition is found before continuing to your next line in the test as shown below:
-
-```java
-WebDriverWait wait = new WebDriverWait(driver, 5); // wait for a maximum of 5 seconds
-wait.until(ExpectedConditions.presenceOfElementLocated(By.id("pg")));
-```
-
-Using WebDriverWait is a great way to make tests less brittle and more
-accepting of differences in network speeds, surges in traffic, and other challenges in the test environment.
+Assigning tag(s) in your tests allows you to easily search for test results on the Sauce Labs [Archives](https://saucelabs.com/beta/archives) page.
