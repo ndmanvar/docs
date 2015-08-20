@@ -18,6 +18,7 @@ In this tutorial we are going to show you how to run a test with Selenium WebDri
 3. [Running Tests on Sauce](#running-tests-on-sauce)
 4. [Running Against Local Applications](#running-tests-against-local-applications)
 5. [Reporting to the Sauce Labs Dashboard](#reporting-to-the-sauce-labs-dashboard)
+6. [Running Tests in Parallel](#running-tests-in-parallel)
 
 ## Dependencies
 First, add the [Selenium WebDriver API](http://www.seleniumhq.org/download/) to your local Python environment using [pip](https://pypi.python.org/pypi/pip):
@@ -159,3 +160,90 @@ desired_cap = {
     'tags': [ "tag1", "tag2", "tag3" ]
 }
 ```
+## Running Tests in Parallel 
+
+Now that you're running tests on Sauce, you may wonder how you can run your tests more quickly. Running tests in parallel is the answer! To do this we will need to use a third party test runner. The most popular third party test runners for Python are [py.test](http://pytest.org/latest/) and [nose](https://nose.readthedocs.org/en/latest/). Here is an example using [nose](https://nose.readthedocs.org/en/latest/):
+
+### Parallel Testing with nose
+
+First, install nose:
+
+```
+pip install nose==1.1.0
+```
+
+Now, let's use the [platform configurator](https://docs.saucelabs.com/reference/platforms-configurator/#/) to add two platforms that we want to test on. Replace "desired_cap" in our example script above with an array of configs like so:
+
+```python
+browsers = [{
+    "platform": "Windows 10",
+    "browserName": "internet explorer",
+    "version": "11"
+}, {
+    "platform": "OS X 10.11",
+    "browserName": "safari",
+    "version": "8.1"
+}]
+```
+
+Putting it all together, here is a working script that will run tests in parallel on Sauce with the browsers we have assigned above:
+
+```python
+import os
+import sys
+import inspect
+from nose.tools import with_setup
+from selenium import webdriver
+from sauceclient import SauceClient
+
+browsers = [{
+    "platform": "Windows 10",
+    "browserName": "internet explorer",
+    "version": "11"
+}, {
+    "platform": "OS X 10.11",
+    "browserName": "safari",
+    "version": "8.1"
+}]
+
+username = os.environ['SAUCE_USERNAME']
+access_key = os.environ['SAUCE_ACCESS_KEY']
+
+def launchBrowser(caps):
+    caps['name'] = inspect.stack()[1][3]
+    return webdriver.Remote(
+            command_executor = "http://%s:%s@ondemand.saucelabs.com:80/wd/hub" % (username, access_key),
+            desired_capabilities = caps);
+
+def teardown_func():
+    global driver
+    driver.quit()
+    sauce_client = SauceClient(username, access_key)
+    status = sys.exc_info() == (None, None, None)
+    sauce_client.jobs.update_job(driver.session_id, passed=status)
+
+# Will generate a test for each browser and os configuration
+def test_generator_verify_google():
+    for browser in browsers:
+        yield verify_google, browser
+
+@with_setup(None, teardown_func)
+def verify_google(browser):
+    global driver
+    driver = launchBrowser(browser)
+    driver.get("http://www.google.com")
+    assert ("Google" in driver.title), "Unable to load google page"
+    elem = driver.find_element_by_name("q")
+    elem.send_keys("Sauce Labs")
+    elem.submit()
+
+```
+
+Now run with the following command: 
+
+```
+nosetests --processes=8 --process-timeout=120
+```
+__Note:__ This script references the sauceclient and selenium so make sure you have those installed.
+
+Visit your [dashboard](https://saucelabs.com/beta/dashboard) and you should see four tests running at once! Use the [nose docs](https://nose.readthedocs.org/en/latest/) to learn more about how to properly use [nose](https://nose.readthedocs.org/en/latest/) for running tests in parallel.
