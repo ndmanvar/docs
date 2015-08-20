@@ -169,8 +169,8 @@ Now that you're running tests on Sauce, you may wonder how you can run your test
 First install py.test:
 
 ```
-pip install -U pytest # or 
-easy_install -U pytest
+pip install -U pytest -xdist # or 
+easy_install -U pytest -xdist
 ```
 Now, let's use the [platform configurator](https://docs.saucelabs.com/reference/platforms-configurator/#/) to add two platforms that we want to test on. Replace "desired_cap" in our example script above with an array of configs like so:
 
@@ -255,7 +255,7 @@ class FirstSampleTest(unittest.TestCase):
 Since we are running on two platforms, use -n2 like so to run your tests in parallel:
 
 ```
-py.test -n2 first_test.py
+py.test -n10 first_test.py
 ```
 
 Visit your [dashboard](https://saucelabs.com/beta/dashboard) and you should see four tests running at once! Use the [py.test docs](http://pytest.org/latest/) to learn more about how to properly use py.test for running tests in parallel.
