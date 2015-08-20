@@ -162,7 +162,103 @@ desired_cap = {
 ```
 ## Running Tests in Parallel 
 
-Now that you're running tests on Sauce, you may wonder how you can run your tests more quickly. Running tests in parallel is the answer! To do this we will need to use a third party test runner. The most popular third party test runners for Python are [py.test](http://pytest.org/latest/) and [nose](https://nose.readthedocs.org/en/latest/). Here is an example using [nose](https://nose.readthedocs.org/en/latest/):
+Now that you're running tests on Sauce, you may wonder how you can run your tests more quickly. Running tests in parallel is the answer! To do this we will need to use a third party test runner. The most popular third party test runners for Python are [py.test](http://pytest.org/latest/) and [nose](https://nose.readthedocs.org/en/latest/).
+
+### Parallel Testing with py.test
+
+First install py.test:
+
+```
+pip install -U pytest # or 
+easy_install -U pytest
+```
+Now, let's use the [platform configurator](https://docs.saucelabs.com/reference/platforms-configurator/#/) to add two platforms that we want to test on. Replace "desired_cap" in our example script above with an array of configs like so:
+
+```python
+browsers = [{
+    "platform": "Windows 10",
+    "browserName": "internet explorer",
+    "version": "11"
+}, {
+    "platform": "OS X 10.11",
+    "browserName": "safari",
+    "version": "8.1"
+}]
+```
+
+Just add and remove browsers here as you see fit.
+
+Then create a decorator and add your tests like in this example below. You can actually just add your test cases to this script:
+
+```python
+import os
+import unittest
+import sys
+import new
+from selenium import webdriver
+from sauceclient import SauceClient
+
+browsers = [{
+    "platform": "Windows 10",
+    "browserName": "internet explorer",
+    "version": "11"
+}, {
+    "platform": "OS X 10.11",
+    "browserName": "safari",
+    "version": "8.1"
+}]
+
+username = 'sauceUsername'
+access_key = 'sauceAccessKey'
+
+# This decorator is required to iterate over browsers
+def on_platforms(platforms):
+    def decorator(base_class):
+        module = sys.modules[base_class.__module__].__dict__
+        for i, platform in enumerate(platforms):
+            d = dict(base_class.__dict__)
+            d['desired_capabilities'] = platform
+            name = "%s_%s" % (base_class.__name__, i + 1)
+            module[name] = new.classobj(name, (base_class,), d)
+    return decorator
+
+@on_platforms(browsers)
+class FirstSampleTest(unittest.TestCase):
+
+    # setUp runs before each test case
+    def setUp(self):
+        self.desired_capabilities['name'] = self.id()
+        self.driver = webdriver.Remote(
+           command_executor="http://%s:%s@ondemand.saucelabs.com:80/wd/hub" % (username, access_key),
+           desired_capabilities=self.desired_capabilities)
+
+    # verify google title
+    def test_google(self):
+        self.driver.get("http://www.google.com")
+        assert ("Google" in self.driver.title), "Unable to load google page"
+
+    # type 'Sauce Labs' into google search box and submit
+    def test_google_search(self):
+        self.driver.get("http://www.google.com")
+        elem = self.driver.find_element_by_name("q")
+        elem.send_keys("Sauce Labs")
+        elem.submit()
+
+    # tearDown runs after each test case
+    def tearDown(self):
+        self.driver.quit()
+        sauce_client = SauceClient(username, access_key)
+        status = (sys.exc_info() == (None, None, None))
+        sauce_client.jobs.update_job(self.driver.session_id, passed=status)
+
+```
+Since we are running on two platforms, use -n2 like so to run your tests in parallel:
+
+```
+py.test -n2 first_test.py
+```
+
+Visit your [dashboard](https://saucelabs.com/beta/dashboard) and you should see four tests running at once! Use the [py.test docs](http://pytest.org/latest/) to learn more about how to properly use py.test for running tests in parallel.
 
 ### Parallel Testing with nose
 
@@ -206,8 +302,8 @@ browsers = [{
     "version": "8.1"
 }]
 
-username = os.environ['SAUCE_USERNAME']
-access_key = os.environ['SAUCE_ACCESS_KEY']
+username = 'sauceUsername'
+access_key = 'sauceAccessKey'
 
 def launchBrowser(caps):
     caps['name'] = inspect.stack()[1][3]
