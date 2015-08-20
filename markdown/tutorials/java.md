@@ -35,7 +35,7 @@ To using a remote driver pointed at ondemand.saucelabs.com, specifying your Sauc
 DesiredCapabilities caps = DesiredCapabilities.firefox();
 caps.setCapability("platform", "Windows 7");
 caps.setCapability("version", "38.0");
-WebDriver driver = new RemoteWebDriver(new URL("http://YOUR_USERNAME:YOUR_ACCESS_KEY@ondemand.saucelabs.com:80/wd/hub"), caps);
+WebDriver driver = new RemoteWebDriver(new URL("http://sauceUsername:sauceAccessKey@ondemand.saucelabs.com:80/wd/hub"), caps);
 ```
 
 To get things working really well, we recommend adding a number of features to your setup from here:
@@ -65,8 +65,8 @@ import java.net.URL;
 
 public class SampleSauceTest {
 
-  public static final String USERNAME = System.getenv("SAUCE_USERNAME");
-  public static final String ACCESS_KEY = System.getenv("SAUCE_ACCESS_KEY");
+  public static final String USERNAME = "sauceUsername";
+  public static final String ACCESS_KEY = "sauceAccessKey";
   public static final String URL = "http://" + USERNAME + ":" + ACCESS_KEY + "@ondemand.saucelabs.com:80/wd/hub";
 
   public static void main(String[] args) throws Exception {
@@ -138,8 +138,8 @@ public class SampleSauceTest {
 * Creates an authentication instance using the supplied user name/access key.
 */
 
-  public static final String USERNAME = System.getenv("SAUCE_USERNAME");
-  public static final String ACCESS_KEY = System.getenv("SAUCE_ACCESS_KEY");
+  public static final String USERNAME = "sauceUsername";
+  public static final String ACCESS_KEY = "sauceAccessKey";
   public static final String URL = "http://" + USERNAME + ":" + ACCESS_KEY + "@ondemand.saucelabs.com:80/wd/hub";
 
 /**
@@ -357,7 +357,7 @@ You can use assign build number/tag(s) to search or identify the test result wit
         caps.setCapability("tags", "Tag1");
         caps.setCapability("build", "v1.0");
         WebDriver driver = new RemoteWebDriver(
-                new URL("http://YOUR_USERNAME:YOUR_ACCESS_KEY@ondemand.saucelabs.com:80/wd/hub"),
+                new URL("http://sauceUsername:sauceAccessKey@ondemand.saucelabs.com:80/wd/hub"),
                 caps);
 ```
 
