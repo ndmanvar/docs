@@ -193,7 +193,7 @@ Most Java users use one of two popular third party testing frameworks: TestNG or
 
 __Note:__ *Tests can be run in parallel at two levels, you can run your tests in parallel and you can run your tests in parallel across multiple browsers. For example, if you have 10 tests and run them serially on five browsers, this would be parallelism of five. You can also run tests across browsers and each test in parallel. Using our previous example, this would be 50 parallel tests (10 tests * 5 browsers). This requires that your tests are written in a way that they do not collide with one another. For more on this see Selenium WebDriver - [Running Your Tests in Parallel blog](https://saucelabs.com/selenium/selenium-webdriver).*
 
-#### Maven, Pom and Dependencies
+### Maven, Pom and Dependencies
 The first thing we need to do regardless of which framework we have chosen is to install a project management tool like [Maven](https://maven.apache.org/download.cgi) or Ant. We'll use Maven in this tutorial. 
 
 Once Maven is installed we need to update the POM (Project Object Model), an XML file used in Maven. The pom.xml stores information about a project like configuration details used during the build process.
@@ -202,7 +202,7 @@ The dependency list is the most important feature of a POM. Almost every project
 
 Three dependencies are required to run tests in parallel on Sauce:
 
-###### Selenium Dependency 
+### Selenium Dependency 
 The first thing you need to do is add the following common Selenium dependency to the pom.xml file regardless of the framework you are using to write your tests. This tells your project which version of Selenium to use.
 
 ```xml
@@ -215,7 +215,7 @@ The first thing you need to do is add the following common Selenium dependency t
 
 ```
 
-###### Framework Dependency
+### Framework Dependency
 This is where you specify whether your are using Junit or TestNG as your framework. 
 
 For Junit: 
@@ -239,7 +239,7 @@ For TestNG:
 </dependency>
 ```
 
-###### Java Helper Library
+## Java Helper Library
 The Java Helper Library handles reporting between your tests and Sauce Labs. It allows you to see useful information like the test name and pass/fail status in your Sauce Labs [Dashboard](https://saucelabs.com/beta/dashboard).
 
 For Junit:
@@ -262,10 +262,10 @@ For TestNG:
 </dependency>
 ```
 
-#### Parallelizing Junit
+## Parallelizing Junit
 The Java helper library includes a Parallelized class that creates a dynamic thread pool that holds each thread that is running a test.
 
-###### Parallelizing the WebDriverTest Class
+### Parallelizing the WebDriverTest Class
 
 As mentioned previously, the SampleSauceTest class demonstrates how to run its tests in parallel. The test is parallelized by specifying the different parameters to test with, in this case the browser and platform. Behind the scenes, the test framework creates a different instance of the test class for each set of parameters and runs them in parallel. The parameters are passed to the constructor so each instance customizes its behavior using those parameters.
 
@@ -273,7 +273,7 @@ In this example, we're parallelizing tests across different browsers on differen
 
 For a full example, see: https://github.com/ndmanvar/SeleniumJavaJunit/blob/master/src/test/java/com/yourcompany/SampleSauceTest.java
 
-###### Setting a Parallelism Limit
+### Setting a Parallelism Limit
 
 To stop tests from timing out when you're already using all your Sauce Labs parallel slots, we need to limit the number of threads.
 
@@ -304,7 +304,7 @@ The Sauce Labs Parallelized JUnit runner we used above uses the junit.parallel.t
 </build>
 
 ```
-#### Parallelizing TestNG
+## Parallelizing TestNG
 TestNG has built in support for running tests in parallel. All you need to do is set a parallelism limit in your pom.xml like so: 
 
 ```xml
@@ -338,12 +338,12 @@ Don't forget to match your thread count to your concurrency limit.
 ## Reporting to the Sauce Labs Dashboard
 Follow these best practices to enhance your user experience while using Sauce Labs with Java:
 
-###### Reporting Test Results
+### Reporting Test Results
 If you have installed the Java Helper Library for your chosen framework, then your test information (like test name and pass/fail status) will automatically show up in your Sauce [Dashboard](https://saucelabs.com/beta/dashboard). 
 
 Here are instructions for [installing the Java Helper Library for TestNG and Junit](https://github.com/jsmoxon/JavaDocs#3-java-helper-library).
 
-###### Tagging Tests
+### Tagging Tests
 
 Sauce Labs allows you to “tag” your tests with different labels and variables like build ID, name, or custom. Sauce uses DesiredCapabilities to do this.
 
