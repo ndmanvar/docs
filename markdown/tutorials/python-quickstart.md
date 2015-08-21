@@ -24,7 +24,10 @@ In this tutorial we are going to show you how to run a test with Selenium WebDri
 First, add the [Selenium WebDriver API](http://www.seleniumhq.org/download/) to your local Python environment using [pip](https://pypi.python.org/pypi/pip):
 
 ```
-pip install selenium
+pip install selenium 
+
+# If you don't have pip installed, run:
+sudo easy_install pip 
 ```
 	
 ## Code Example
@@ -122,7 +125,7 @@ Sauce Connect is a tunneling app that allows you to execute tests securely when 
 
 Unfortunately, Sauce has no way to determine whether your test passed or failed automatically, since it is determined entirely by your business logic. We can, however, tell Sauce about the results of our tests automatically using the [Sauce python client](https://pypi.python.org/pypi/sauceclient):
 ```
-pip install sauceclient
+pip install sauceclient 
 ```
 Then add this to your test:
 ```python
@@ -169,8 +172,7 @@ Now that you're running tests on Sauce, you may wonder how you can run your test
 First install py.test:
 
 ```
-pip install -U pytest -xdist # or 
-easy_install -U pytest -xdist
+pip install selenium sauceclient pytest pytest-xdist 
 ```
 Now, let's use the [platform configurator](https://docs.saucelabs.com/reference/platforms-configurator/#/) to add two platforms that we want to test on. Replace "desired_cap" in our example script above with an array of configs like so:
 
@@ -265,7 +267,7 @@ Visit your [dashboard](https://saucelabs.com/beta/dashboard) and you should see 
 First, install nose:
 
 ```
-pip install nose==1.1.0
+pip install selenium sauceclient nose==1.1.0
 ```
 
 Now, let's use the [platform configurator](https://docs.saucelabs.com/reference/platforms-configurator/#/) to add two platforms that we want to test on. Replace "desired_cap" in our example script above with an array of configs like so:

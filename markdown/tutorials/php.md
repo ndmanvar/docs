@@ -79,7 +79,7 @@ These instructions are for setting up Sausage on a  Windows operating system. Fo
 3. Navigate to your project directory in the command prompt and execute givememysausage.php file using this command:
 
 ```
-php givememysausage.php -t YOUR_USERNAME YOUR_ACCESS_KEY
+php givememysausage.php -t sauceUsername sauceAccessKey
 ```
 
 This downloads Sausage and all its dependences (PHPUnit for instance). The Sausage set up might take a few minutes. The set up checks for a number of requirements and if any are not met, notification messages are displayed on your screen. Fix the issues, if any, and then run installation command again. 
@@ -112,7 +112,7 @@ Integrating Sauce is simple. We add a set of desired capabilities, and point to 
 
 require_once 'vendor/autoload.php';
 
-define('SAUCE_HOST', SAUCE_USERNAME.':'.SAUCE_ACCESS_KEY.'@ondemand.saucelabs.com');
+define('SAUCE_HOST', 'sauceUsername:sauceAccessKey@ondemand.saucelabs.com');
 
 class WebTest extends PHPUnit_Extensions_Selenium2TestCase
 {
