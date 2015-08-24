@@ -333,7 +333,7 @@ Example:
 ```
 
 ### Specifying the Screen Resolution
-This setting specifies which screen resolution should be used during the test session. This feature is available in Windows XP, Windows 7 (except Windows 7 with IE 9), Windows 8, Windows 8.1, and OS X 10.8. We do not yet offer specific resolutions for Windows 10, OS X 10.9, OS X 10.10, OS X 10.11, Linux, or mobile platforms.
+This setting specifies which screen resolution should be used during the test session. This feature is available in Windows XP, Windows 7 (except Windows 7 with IE 9), Windows 8, Windows 8.1, and OS X 10.8, 10.9, and 10.10. We do not yet offer specific resolutions for Windows 10, OS X 10.11, Linux, or mobile platforms.
 
 Key: `screenResolution`
 
@@ -348,6 +348,8 @@ Example:
 Valid values for Windows XP and Windows 7 are:<br/> `800x600` `1024x768` `1052x864` `1152x864` `1280x800` `1280x960` `1280x1024` `1400x1050` `1440x900` `1600x1200` `1680x1050` `1920x1200` `2560x1600`
 
 Valid values for OS X 10.8 are:<br/> `1024x768` `1152x864` `1152x900` `1280x800` `1280x1024` `1376x1032` `1400x1050` `1600x1200` `1680x1050` `1920x1200`
+
+Valid values for OS X 10.9 and 10.10 are:<br/> `800x600` `1024x768` `1152x720` `1152x864` `1152x900` `1280x720` `1280x768` `1280x800` `1280x960` `1280x1024` `1366x768` `1376x1032` `1400x1050` `1440x900` `1600x900` `1600x1200` `1680x1050` `1920x1200` `1920x1440` `2048x1152` `2048x1536` `2360x1770`
 
 Valid values for Windows 8 and 8.1 are:<br/> `800x600` `1024x768` `1280x1024`
 
