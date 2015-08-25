@@ -1,225 +1,235 @@
- {
-  title: "Ruby",
-  description: "How to run Selenium tests on Sauce Labs using Ruby",
-  category: 'Tutorials',
-  index: 1,
-  image: "/images/tutorials/ruby.png"
+Sauce Labs is a cloud platform for executing automated and manual mobile and web tests. Sauce Labs supports running automated tests with Selenium WebDriver (for web applications) and Appium (for native and mobile web applications).
+
+In this tutorial we are going to show you how to run a test with Selenium WebDriver on Sauce Labs.
+
+## Table of Contents
+
+1. [Quickstart](#quickstart)
+2. [Prerequisites](#prerequisites)
+3. [Code Example](#code-example)
+4. [Running Tests in the Sauce Cloud](#running-tests-in-the-sauce-cloud)
+5. [Running Against Local Applications](#running-tests-against-local-applications)
+6. [Running Tests in Parallel](#running-tests-in-parallel)
+7. [Reporting on Test Results](#reporting-on-test-results)
+
+
+## Quickstart
+
+It's very easy to get your existing Ruby tests up and running on Sauce. 
+
+If you wanted to run a test on Selenium locally, you would initiate a driver for the browser you want to test against like this:
+```
+driver = Selenium::WebDriver.for :firefox
+```
+To run an existing test on Sauce, all you need to change is your `driver` definition, and make sure that the `sauce_endpoint` variable includes your Sauce `USERNAME` and `ACCESSKEY.`
+
+```ruby
+driver = Selenium::WebDriver.for :remote, :url => sauce_endpoint, :desired_capabilities => caps
+```
+```ruby
+sauce_endpoint = "http://sauceUsername:sauceAccessKey@ondemand.saucelabs.com:80/wd/hub"
+```
+The **Code Sample** and the section **Running Your Tests on Sauce** provides more detail on the driver and endpoint specifications.
+
+## Prerequisites
+
+-   Make sure you have the [selenium-webdriver](https://rubygems.org/gems/selenium-webdriver) gem installed
+-   If you want to run tests in parallel you will also need the [parallel_tests](https://github.com/grosser/parallel_tests) gem
+-   Our parallel test examples use RSpec. If you don't have [RSpec](http://rspec.info/) or a similar behavior-driven development (BDD) framework installed, you will need to pick one that you would like to use. If you have a BDD other than RSpec installed, you should be able to adapt our code examples to your favorite flavor of BDD. 
+
+## Code Example
+
+This code examples shows a very simple test to see if the title of Google's home page has changed, but it includes everything you need to set up and run an automated test on Sauce. 
+```ruby
+require "selenium/webdriver"
+ 
+sauce_endpoint = "http://sauceUsername:sauceAccessKey@ondemand.saucelabs.com:80/wd/hub"
+ 
+caps = {
+  :platform => "Mac OS X 10.9",
+  :browserName => "Chrome",
+  :version => "31"
 }
+ 
+driver = Selenium::WebDriver.for :remote, :url => sauce_endpoint, :desired_capabilities => caps
+driver.manage.timeouts.implicit_wait = 10
+driver.navigate.to "http://www.google.com"
+ 
+raise SystemError("Unable to load Google.") unless driver.title.include? "Google"
+ 
+query = driver.find_element :name, "q"
+query.send_keys "Sauce Labs"
+query.submit
+ 
+puts driver.title
+driver.quit
+```
+1.  Copy this code and save it into a file called `simple.rb`.
+2.  Open a terminal and navigate to the file location. 
+3.  Run `simple.rb`.
 
-The [sauce gem](https://github.com/saucelabs/sauce_ruby) makes it easy to run Selenium or Capybara tests against a wide range of browsers on Windows (XP, 7, 8), OS X, Linux, iOS and Android.
+`ruby simple.rb`
 
-This example uses [Capybara](http://jnicklas.github.com/capybara/) and RSpec with Rails 4 and Ruby 2.0, but Sauce Labs also works great against any Ruby web stack, and with [Test::Unit](https://saucelabs.com/docs/ondemand/getting-started/env/ruby/se2/mac), [Cucumber](https://github.com/sauce-labs/sauce_ruby/wiki/Cucumber-and-Capybara), and most other testing frameworks... right down to vanilla [WebDriver](http://code.google.com/p/selenium/wiki/RubyBindings).
+Voila! You have just run your first test on Sauce, which you can verify by checking [your Dashboard](https://saucelabs.com/beta/dashboard).
 
-Your tests are run in real browsers on a real operating system, in a
-dedicated, single-use VM.  Once they're complete, screenshots, video,
-Selenium log and a log of passes and failures can be seen and shared.
+## Running Tests in the Sauce Cloud
 
+Let's look at our code sample in more detail to understand how you would use it as the basis for setting up your own tests from scratch, or how you can set up existing tests to run in the Sauce cloud. 
 
-What You'll Need
-----------------
-A working Ruby 2.0 environment with Bundler & the Rails gem installed.
+### Setting the Remote Option for Your Driver
 
-Sauce Connect downloaded from [here](https://docs.saucelabs.com/reference/sauce-connect/), unzipped in a known location.  Take note of the path to the `sc` executable, inside the `bin` subdirectory; You'll need it later.
+If you wanted to run Selenium locally, you would initiate a driver for the browser you want to test against like this:
 
-A bash terminal open in your Rails app's root directory.
+`driver = Selenium::WebDriver.for :firefox`
 
-In your Gemfile:
+To run your test on Sauce, you use the `:remote` option for `driver`, and pass two parameters to it, `:url` and `:desired capabilities`. These parameters define how to access the Sauce cloud, and what platforms, browsers, and versions you want to test against. The values for these parameters and defined by the `sauce_endpoint` and `caps` variables, respectively.
 
 ```ruby
-group :development, :test do
-  # These are the target gems of this tutorial but Sauce Labs works for almost
-  # every WebDriver enabled testing tool
-  gem 'rspec-rails', '~> 3.2.1'
-  gem 'sauce', '~> 3.5.6'
-  gem 'sauce-connect'
-  gem 'capybara', '~> 2.4.4'
-  gem 'parallel_tests'
-end
+driver = Selenium::WebDriver.for :remote, :url => sauce_endpoint, :desired_capabilities => caps
 ```
 
-Setting up RSpec
-----------------
-
-From your `RAILS_ROOT`, `bundle install`, then generate a ./spec directory, a ./spec/spec_helper.rb file, and a warm, fuzzy feeling of productivity by executing:
-
-```bash
-rails generate rspec:install
-```
-
-Set up your `spec_helper` and create a template `sauce_helper`, by running:
-
-```bash
-rake sauce:install:spec
-```
-
-Now, open the new spec/sauce_helper.rb file, and just under the `require` statements, add requires for `capybara/rails` and `capybara/rspec`.
-
-Once this is done, edit the Sauce.config block to configure your desired test platforms by adding entries to the `browsers` array ([details here](https://github.com/saucelabs/sauce_ruby#converting-sauce-labs-capabilities)).
-
-You'll also need to tell the Sauce Connect gem where to find the copy of Sauce Connect you downloaded and unzipped earlier; set the `:sauce_connect_4_executable` key to the path you took note of earlier (including the `bin/sc` part!)
+If you had an existing test that you wanted to run on Sauce, all you would need to change is your `driver` definition, and make sure that the `sauce_endpoint` variable included your Sauce `USERNAME` and `ACCESSKEY.`
 
 ```ruby
-# Use Capybara integration
-require "sauce"
-require "sauce/capybara"
-require "capybara/rails"
-require "capybara/rspec"
-
-# Set up configuration
-Sauce.config do |c|
-  c[:browsers] = [
-    ["Windows 8", "Internet Explorer", "10"],
-    ["Windows 7", "Firefox", "20"],
-    ["OS X 10.10", "Safari", "8"],
-    ["Linux", "Chrome", 40]
-  ]
-  c[:sauce_connect_4_executable] = '/some/file/path/sc-4.3.8-osx/bin/sc'
-end
-
-Capybara.default_driver = :sauce
-Capybara.javascript_driver = :sauce
+sauce_endpoint = "http://sauceUsername:sauceAccessKey@ondemand.saucelabs.com:80/wd/hub"
 ```
+**NOTE**: You can find your Access Key under **Accounts > Settings**.
 
-Check out [our platforms page](http://saucelabs.com/docs/platforms) for available platforms (400+ and counting!).
+### Defining the Platform, Browser, and Version You Want to Test Against
 
-
-Setting up the Sauce Gem
--------------------------
-
-Keep your Sauce Labs credentials out of your repositories and available to all your Sauce Labs tools using projects by adding them as environment variables.
-
-Open `~/.bash_profile` and add the following lines:
-
-```bash
-export SAUCE_USERNAME=sauceUsername
-export SAUCE_ACCESS_KEY=sauceAccessKey
-```
-
-You'll then need to re-load that profile with `source ~/.bash_profile`
-
-Open your environment variables settings window (Instructions [here](http://www.itechtalk.com/thread3595.html)) and set the following variables:
-
-    Name: SAUCE_USERNAME
-    Value: sauceUsername
-
-    Name: SAUCE_ACCESS_KEY
-    Value: sauceAccessKey
-
-Writing your tests
------------------
-
-Phew!  That's all your setup done.  You're ready to write your tests.
-
-Because we want the Capybara DSL included, we're going to put our tests in
-the spec/features directory.
-
-Turn on the Sauce voodoo by tagging each describe block ('example group' in RSpec-lish)  with `:sauce => true` like this:
-
-    $ mkdir ./spec/features
-    $ vim ./spec/features/ramen_spec.rb
+Now that your test is set up to run in the Sauce cloud, you need to define the platform, browser, and version you want the test to run against, which is where `:desired_capabilites` and `caps` come into play. 
 
 ```ruby
-require "rails_helper"
+caps = { :platform => "Mac OS X 10.9", :browserName => "Chrome", :version => "31" }
+```
 
-describe "Wikipedia's Ramen Page", :sauce => true do
-  it "Should mention the inventor of instant Ramen" do
-    visit "http://en.wikipedia.org/"
-    fill_in 'search', :with => "Ramen"
-    click_button "searchButton"
+You can manually enter the values you want for `:platform`, `:browsername`, and `:version`, or you can use the handy [Sauce Labs Platform Configurator](https://docs.saucelabs.com/reference/platforms-configurator/#/) to generate the `caps` values for any combination of platform, browser, and browser version. 
 
-    heading = find '#firstHeading'
-    expect( heading ).to have_content "Ramen"
+
+## Running Tests Against Local Applications
+If your test application is not publicly available, you will need to use Sauce Connect so that Sauce can reach it. 
+
+Sauce Connect is a tunneling app that allows you to execute tests securely when testing behind firewalls or on localhost. For more detailed information, please visit see the [Sauce Connect docs](https://docs.saucelabs.com/reference/sauce-connect/). 
+
+## Running Tests in Parallel
+
+
+"Well," you say, "this all looks really easy if I'm just running a single test against a single platform/browser/version, but I have multiple tests I need to run against multiple configurations." There are many ways you could accomplish this, but we're going to show the example of using RSpec, the behavior-driven development (BDD) framework for Ruby. 
+
+First up, you'll need to add the RSpec, Selenium and ParallelTests gems into your Gemfile, then run `bundle install`.
+
+```
+gem "rspec", "~> 3.0.0"
+gem "selenium-webdriver", "~> 2.47.1"
+gem "parallel_tests", "~> 1.6.1
+```
+
+Create a `spec` directory in your project's root directory. Inside that directory, you should create a file called `sauce_driver.rb`, which nicely encapsulates the behaviour we need to create Selenium drivers with Sauce Labs:
+
+```ruby
+require "selenium/webdriver"
+ 
+module SauceDriver
+  class << self
+    def sauce_endpoint
+      "http://#{ENV["SAUCE_USERNAME"]}:#{ENV['SAUCE_ACCESS_KEY']}@ondemand.saucelabs.com:80/wd/hub"
+    end
+ 
+    def caps
+      caps = {
+        :platform => "Mac OS X 10.9",
+        :browserName => "Chrome",
+        :version => "31"
+      }
+    end
+ 
+    def new_driver
+      Selenium::WebDriver.for :remote, :url => sauce_endpoint, :desired_capabilities => caps
+    end
   end
 end
 ```
-That's one spec, how about another?
-
-    $ vim ./spec/features/miso_spec.rb
+Now, you need to make RSpec create a new driver for each spec. The cleanest way to do that is by defining an `around` hook, which will be run, uh, around every spec. Create a file in the `spec` directory, called `spec_helper.rb`. This file will get `require` `d by every spec you create, as this is where, by convention, any setup code is placed:
 
 ```ruby
-require "rails_helper"
-
-describe "Wikipedia's Miso Page", :sauce => true do
-  it "Should mention a favorite type of Miso" do
-    visit "http://en.wikipedia.org/"
-    fill_in 'search', :with => "Miso"
-    click_button "searchButton"
-
-    heading = find '#firstHeading'
-    expect( heading ).to have_content "Miso"
+require "rspec"
+require_relative "sauce_driver"
+ 
+RSpec.configure do |config|
+  config.around(:example, :run_on_sauce => true) do |example|
+    @driver = SauceDriver.new_driver
+    begin
+      example.run
+    ensure
+      @driver.quit
+    end
   end
 end
 ```
 
-And that's everything!
+On line 5 you set up a new block of code to be run `around` every example tagged with `:run_on_sauce => true`. This lets you have non-Selenium tests that don't spin up Selenium sessions. You have to make sure you include `:run_on_sauce` on all your Selenium tests, though!
 
-Running your tests
-------------------
+On line 6 you use the `SauceDriver` class you set up earlier to create a new Selenium driver, 'pointed' at Sauce Labs. Then, on line 8, you run the example.  On lines 9 - 11 we call `quit` on the Selenium session; This is done in an `ensure` block so that each test always closes off its driver, even if something goes wrong.
 
-```bash
-rake sauce:spec
-```
-
-It's that simple (Thanks in part to the excellent [parallel_tests](https://github.com/grosser/parallel_tests) gem.)
-Your tests will run once for every platform, taking advantage of Sauce Labs to run at the maximum concurrency for your
-account.
-
-The sauce:spec rake command takes two optional parameters to let you control the directory you keep your specs
-in and the level of concurrency at which you run them. For example, to run specs from the "spec" directory one at a time,
-you'd run the command like so:
-
-```bash
-rake sauce:spec[spec,1]
-```
-
-You should see output much like the following:
-
-```
-20 processes for 8 specs, ~ 0 specs per process
-[Sauce Connect is connecting to Sauce Labs...]
-
-[snip]A LOT OF TEST DATA[/snip]
-
-8 examples, 2 failures
-
-Took 257 seconds (4:17)
-```
-
-The `6 examples, 2 failures` line means your tests are running against each browser, passing 6 times (two tests passing in three browsers each) and failing twice (That's in OS X, and is expected for this example). Congratulations!
-
-Running in parallel makes your build faster, so you can run more tests in more browsers in less total time.
-
-Check out the results, including a command log, screenshots, and video of the browser executing the test, on your [account page](https://saucelabs.com/account).
-
-Help, it didn't work!
----------------------
-
-Make sure your example groups are tagged with `:sauce => true`.  Without this tag, the RSpec integration won't be used, and your tests will only run with the default Sauce configuration.
-
-If you still can't get things going, drop us a line at help@saucelabs.com and we're happy to assist you.  Don't forget to include your Gemfile.lock!
-
-What's Next?
-------------
-**Capybara Resources**
-
-Now that you have an example to work with, it's time to write a test for your web app! For more info on how to write Capybara tests, we recommend the excellent [Capybara README](https://github.com/jnicklas/capybara).
-
-**Testing against local servers with Sauce Connect**
-
-If you need to test a staged site behind your firewall, that's no problem: you're already set up to use [Sauce Connect](http://saucelabs.com/docs/connect), which means local servers are available to your Sauce Labs tests.
-
-If you don't need access to local servers, you can turn Sauce Connect off by adding this to your Sauce.config block:
+Now you have RSpec set up to create drivers and close them down. Your next question might be, "How do I use these drivers?" Super simple.  Because `driver` is an instance variable, and the `around` block runs in the context of the spec, it can use the driver directly. Consider this example spec:
 
 ```ruby
-  config[:start_tunnel] = false
+require_relative "spec_helper"
+ 
+describe "Google's Search Functionality" do
+  it "can find search results", :run_on_sauce => true do 
+    @driver.manage.timeouts.implicit_wait = 10
+    @driver.navigate.to "http://www.google.com"
+ 
+    raise SystemError("Unable to load Google.") unless @driver.title.include? "Google"
+       
+    query = @driver.find_element :name, "q"
+    query.send_keys "Sauce Labs"
+    query.submit
+ 
+    puts @driver.title
+  end
+end
 ```
 
-**parallel_tests considerations**
+On line 1 you require `spec_helper`. Then, on line 4 you add `:run_on_sauce => true` to make sure the `around` block runs. You can use the created driver, `@driver`, without any further setup, and you don't have to do anything to close it off either. This means you're WAY less likely to forget to do so when you write more tests.
 
-If you find that you run into problems with all your tests using the same db at once, or otherwise need some careful setup, the
-[parallel_tests instructions](https://github.com/grosser/parallel_tests)
-have useful info.
+Now, parallel testing! If you go ahead and create some more specs like this one (you can copy `google_spec.rb` into other files in the `spec` directory, just make sure the filenames end in `spec.rb`), then run the specs from your project root directory with:
 
-**The Sauce Gem**
+`rubybundle exec parallel_rspec -n 2 spec/`
 
-The Sauce gem has its own [github repo](https://github.com/saucelabs/sauce_ruby) and a constantly evolving [wiki](https://github.com/saucelabs/sauce_ruby/wiki/_pages) you should check out!
+You should be able to log into Sauce Labs and see your tests running in parallel. If your account has more than two concurrency slots (meaning, you have a paid account), you can increase the number after `-n` to match your concurrency, and `parallel_tests` will spin up more tests at once.
+
+## Reporting on Test Results
+
+Selenium is a protocol focused on automating the actions of a browse, and as such, it doesn't encompass the notions of a 'test', 'passing' or 'failure'. Sauce Labs lets you notify us of test status using our [REST API.](https://docs.saucelabs.com/reference/rest-api/) All you need is the ID Sauce Labs gave the job, and the status your test ended with. Then, you can use the [Update Job](https://docs.saucelabs.com/reference/rest-api/#update-job) method on the REST API to set the job's status.
+
+The Job ID is the simplest part of the process. The ID assigned to each job by Sauce Labs is the same as the Session ID for the corresponding Selenium session, which you can pull off the driver like so:
+
+`job_id = driver.session_id    
+
+Using the REST API is best done with the [SauceWhisk](https://rubygems.org/gems/sauce_whisk) gem, so add that to your Gemfile, and then run `bundle install`.
+
+`gem "sauce_whisk"`
+
+The SauceWhisk gem assumes you've set your Sauce username and access key as the `SAUCE_USERNAME` and `SAUCE_ACCESS_KEY` environment variables, so go ahead and do that.
+
+Now, assuming you're using RSpec as shown above, you can make a simple change to` spec_helper.rb` to check the status of the test, and pass that to the REST API:
+
+```ruby
+require "sauce_whisk"
+ 
+RSpec.configure do |config|
+  config.around(:example, :run_on_sauce => true) do |example|
+    @driver = SauceDriver.new_driver
+    @job_id = @driver.session_id
+    begin
+      example.run
+    ensure
+      SauceWhisk::Jobs.change_status job_id, !example.exception.nil?
+      @driver.quit
+    end
+  end
+end
+```
+That's it!  Your tests will now be reporting their status to the [Sauce Labs REST API](https://docs.saucelabs.com/reference/rest-api/).
