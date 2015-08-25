@@ -1,3 +1,13 @@
+{
+  title: "Ruby",
+  description: "How to run Selenium tests on Sauce Labs using Ruby",
+  category: 'Tutorials',
+  index: 1,
+  image: "/images/tutorials/java.png"
+}
+
+## Getting Started with Ruby
+
 Sauce Labs is a cloud platform for executing automated and manual mobile and web tests. Sauce Labs supports running automated tests with Selenium WebDriver (for web applications) and Appium (for native and mobile web applications).
 
 In this tutorial we are going to show you how to run a test with Selenium WebDriver on Sauce Labs.
