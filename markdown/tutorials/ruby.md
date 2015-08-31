@@ -65,7 +65,7 @@ driver = Selenium::WebDriver.for :remote, :url => sauce_endpoint, :desired_capab
 driver.manage.timeouts.implicit_wait = 10
 driver.navigate.to "http://www.google.com"
  
-raise SystemError("Unable to load Google.") unless driver.title.include? "Google"
+raise "Unable to load Google." unless driver.title.include? "Google"
  
 query = driver.find_element :name, "q"
 query.send_keys "Sauce Labs"
@@ -129,35 +129,39 @@ Sauce Connect is a tunneling app that allows you to execute tests securely when 
 First up, you'll need to add the RSpec, Selenium and ParallelTests gems into your Gemfile, then run `bundle install`.
 
 ```
+source "https://www.rubygems.org"
+
 gem "rspec", "~> 3.0.0"
 gem "selenium-webdriver", "~> 2.47.1"
-gem "parallel_tests", "~> 1.6.1
+gem "parallel_tests", "~> 1.6.1"
 ```
 
 Create a `spec` directory in your project's root directory. Inside that directory, you should create a file called `sauce_driver.rb`, which nicely encapsulates the behaviour we need to create Selenium drivers with Sauce Labs:
 
 ```ruby
 require "selenium/webdriver"
- 
+
 module SauceDriver
   class << self
     def sauce_endpoint
       "http://#{ENV["SAUCE_USERNAME"]}:#{ENV['SAUCE_ACCESS_KEY']}@ondemand.saucelabs.com:80/wd/hub"
     end
- 
-    def caps
+
+    def caps(name)
       caps = {
         :platform => "Mac OS X 10.9",
         :browserName => "Chrome",
-        :version => "31"
+        :version => "31",
+        :name => name
       }
     end
- 
-    def new_driver
-      Selenium::WebDriver.for :remote, :url => sauce_endpoint, :desired_capabilities => caps
+
+    def new_driver(name)
+      Selenium::WebDriver.for :remote, :url => sauce_endpoint, :desired_capabilities => caps(name)
     end
   end
 end
+
 ```
 Now, you need to make RSpec create a new driver for each spec. The cleanest way to do that is by defining an `around` hook, which will be run, uh, around every spec. Create a file in the `spec` directory, called `spec_helper.rb`. This file will get `require` `d by every spec you create, as this is where, by convention, any setup code is placed:
 
@@ -167,7 +171,8 @@ require_relative "sauce_driver"
  
 RSpec.configure do |config|
   config.around(:example, :run_on_sauce => true) do |example|
-    @driver = SauceDriver.new_driver
+    @driver = SauceDriver.new_driver example.full_description
+    job_id = @driver.session_id
     begin
       example.run
     ensure
@@ -191,7 +196,7 @@ describe "Google's Search Functionality" do
     @driver.manage.timeouts.implicit_wait = 10
     @driver.navigate.to "http://www.google.com"
  
-    raise SystemError("Unable to load Google.") unless @driver.title.include? "Google"
+    raise "Unable to load Google." unless @driver.title.include? "Google"
        
     query = @driver.find_element :name, "q"
     query.send_keys "Sauce Labs"
@@ -206,7 +211,7 @@ On line 1 you require `spec_helper`. Then, on line 4 you add `:run_on_sauce => t
 
 Now, parallel testing! If you go ahead and create some more specs like this one (you can copy `google_spec.rb` into other files in the `spec` directory, just make sure the filenames end in `spec.rb`), then run the specs from your project root directory with:
 
-`rubybundle exec parallel_rspec -n 2 spec/`
+`bundle exec parallel_rspec -n 2 spec/`
 
 You should be able to log into Sauce Labs and see your tests running in parallel. If your account has more than two concurrency slots (meaning, you have a paid account), you can increase the number after `-n` to match your concurrency, and `parallel_tests` will spin up more tests at once.
 
@@ -216,7 +221,7 @@ Selenium is a protocol focused on automating the actions of a browse, and as suc
 
 The Job ID is the simplest part of the process. The ID assigned to each job by Sauce Labs is the same as the Session ID for the corresponding Selenium session, which you can pull off the driver like so:
 
-`job_id = driver.session_id    
+`job_id = driver.session_id`
 
 Using the REST API is best done with the [SauceWhisk](https://rubygems.org/gems/sauce_whisk) gem, so add that to your Gemfile, and then run `bundle install`.
 
@@ -227,16 +232,18 @@ The SauceWhisk gem assumes you've set your Sauce username and access key as the 
 Now, assuming you're using RSpec as shown above, you can make a simple change to` spec_helper.rb` to check the status of the test, and pass that to the REST API:
 
 ```ruby
+require "rspec"
+require_relative "sauce_driver"
 require "sauce_whisk"
  
 RSpec.configure do |config|
   config.around(:example, :run_on_sauce => true) do |example|
-    @driver = SauceDriver.new_driver
-    @job_id = @driver.session_id
+    @driver = SauceDriver.new_driver example.full_description
+    job_id = @driver.session_id
     begin
       example.run
     ensure
-      SauceWhisk::Jobs.change_status job_id, !example.exception.nil?
+      SauceWhisk::Jobs.change_status job_id, example.exception.nil?
       @driver.quit
     end
   end
